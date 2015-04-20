@@ -8,11 +8,20 @@ import shutil
 import argparse
 
 
+# Parsing arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", dest="input_path", required=True, help="Path to the input text file.")
 parser.add_argument("-n", "--ngram-size", dest="ngram_size", required=True, type=int, help="Ngram Size.")
 parser.add_argument("-o", "--output", dest="output_path", help="Path to memory mapped output file.")
 parser.add_argument("-t", "--output-text", dest="output_text_path", help="Path to text output file.")
+
+# Mutually exculsive group of pruning arguments
+prune_args = parser.add_mutually_exclusive_group()
+prune_args.add_argument("--prune-vocab-size", dest="vocab_size", default=10000, type=int, help="Vocabulary size. (Default: 10000)")
+prune_args.add_argument("--prune-threshold",  dest="threshold_count", type=int, help="Minimum number of occurances for a word to be added into vocabulary")
+prune_args.add_argument("--vocab_file", dest="vocab_file", help="Path to an existing vocabulary file")
+
+
 
 args = parser.parse_args()
 
@@ -24,6 +33,11 @@ input_path = args.input_path			# Input text file path
 output_path = args.output_path			# Output Path for memory mapped ngrams indices file
 output_path_txt = args.output_text_path	# Output Path for text ngrams indices file
 ngram_size = args.ngram_size			# Ngram Size
+
+
+
+
+
 vocab_path = input_path+".vocab"		# Vocab path 
 
 nsamples = 0
