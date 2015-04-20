@@ -11,13 +11,15 @@ if len(sys.argv) != 5:
 	print "USAGE: python " + sys.argv[0] + " input_txt ngram output_idx output_txt('-' for null)"
 	sys.exit()
 
-input_path = sys.argv[1]
-ngram = int(sys.argv[2])
-output_path = sys.argv[3]
-output_path_txt = sys.argv[4]
+input_path = sys.argv[1]				# Input text file
+ngram = int(sys.argv[2])				# Order of Ngram
+output_path = sys.argv[3]				# Binarized output filename of ngram indices
+output_path_txt = sys.argv[4]			# Text output filename of ngram indices (optional)
+vocab_path = input_path+".vocab"		# Vocab path 
 
 nsamples = 0
-word_to_id_dict = dict()
+word_to_id_dict = dict()		# Word to Index Dictionary
+word_to_freq_dict = dict()		# Word Frequency Dictionary
 
 _, tmp_path = tempfile.mkstemp(prefix='dlm.tmp.')
 
@@ -35,10 +37,18 @@ with open(input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 			if not word_to_id_dict.has_key(token):
 				word_to_id_dict[token] = str(next_id)
 				next_id += 1
+				word_to_freq_dict[token] = 1 
+			else:
+				word_to_freq_dict[token] += 1
 			indices.append(word_to_id_dict[token])
 		for i in range(ngram - 1, len(indices)):
 			tmp_file.write(' '.join(indices[i - ngram + 1 : i + 1]) + "\n")
 			nsamples += 1
+
+# Writing to the vocabulary file in decreasing order of frequency
+with  open(vocab_path,'w') as f_vocab:
+	for token in sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True):
+		f_vocab.write(token+"\t"+ word_to_id_dict.get(token)+"\n")
 
 with open(tmp_path, 'r') as data:
 	fp = np.memmap(output_path, dtype='int32', mode='w+', shape=(nsamples + 1, ngram))
