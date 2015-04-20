@@ -19,9 +19,7 @@ parser.add_argument("-t", "--output-text", dest="output_text_path", help="Path t
 prune_args = parser.add_mutually_exclusive_group()
 prune_args.add_argument("--prune-vocab-size", dest="vocab_size", default=10000, type=int, help="Vocabulary size. (Default: 10000)")
 prune_args.add_argument("--prune-threshold",  dest="threshold_count", type=int, help="Minimum number of occurances for a word to be added into vocabulary")
-prune_args.add_argument("--vocab_file", dest="vocab_file", help="Path to an existing vocabulary file")
-
-
+prune_args.add_argument("--vocab_file", dest="vocab_path", help="Path to an existing vocabulary file")
 
 args = parser.parse_args()
 
@@ -37,38 +35,57 @@ ngram_size = args.ngram_size			# Ngram Size
 
 
 
-
-vocab_path = input_path+".vocab"		# Vocab path 
-
 nsamples = 0
-word_to_id_dict = dict()		# Word to Index Dictionary
-word_to_freq_dict = dict()		# Word Frequency Dictionary
+word_to_id_dict = dict()			# Word to Index Dictionary
 
-# Counting the frequency of the words in the first pass
-with open(input_path, 'r') as input_file:
-	for line in input_file:
-		line = line.strip()
-		if len(line) == 0:
-			continue
-		tokens = line.strip().split()
-		for token in tokens:
-			if not word_to_freq_dict.has_key(token):
-				word_to_freq_dict[token] = 1
-			else:
-				word_to_freq_dict[token] += 1
-				
+if args.vocab_path is None:
+	# Counting the frequency of the words.
+	word_to_freq_dict = dict()		# Word Frequency Dictionary
+	with open(input_path, 'r') as input_file:
+		for line in input_file:
+			line = line.strip()
+			if len(line) == 0:
+				continue
+			tokens = line.strip().split()
+			for token in tokens:
+				if not word_to_freq_dict.has_key(token):
+					word_to_freq_dict[token] = 1
+				else:
+					word_to_freq_dict[token] += 1
+	# Pruning the vocabulary
+	prune_threshold_count = args.threshold_count
+	prune_vocab_size = args.vocab_size
+	
+	# Prune based on threshold
+	if prune_threshold_count is not None:
+		for token, freq in word_to_freq_dict.items():
+			if freq < prune_threshold_count:
+				del word_to_freq_dict[token]
 
-# Writing the vocab file and creating a word to id dictionary.
-word_to_id_dict['<unk>'] = 0
-word_to_id_dict['<s>'] = 1
-curr_index = 2
-with  open(vocab_path,'w') as f_vocab:
-	f_vocab.write('<unk>\t0\n<s>\t1\n')
-	for token in sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True):
-		f_vocab.write(token+"\t"+str(curr_index)+"\n")
-		word_to_id_dict[token]=curr_index
-		curr_index = curr_index + 1
-
+	# Writing the vocab file and creating a word to id dictionary.
+	vocab_path = input_path+".vocab" 
+	word_to_id_dict['<unk>'] = 0
+	word_to_id_dict['<s>'] = 1
+	curr_index = 2
+	with  open(vocab_path,'w') as f_vocab:
+		f_vocab.write('<unk>\n<s>\n')
+		tokens_freq_sorted = sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True)
+		if prune_threshold_count is None and prune_vocab_size < len(tokens_freq_sorted):
+			tokens_freq_sorted = tokens_freq_sorted[0:prune_vocab_size]
+		for token in tokens_freq_sorted :
+			f_vocab.write(token+"\n")
+			word_to_id_dict[token]=curr_index
+			curr_index = curr_index + 1
+else:
+	vocab_path = args.vocab_path
+	with open(vocab_path,'r') as f_vocab:
+		curr_index = 0
+		for line in f_vocab:
+			token = line.strip()
+			if not word_to_id_dict.has_key(token):
+				word_to_id_dict[token] = curr_index
+			curr_index = curr_index + 1
+		assert ( word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>')), "Missing <s> or <unk> in given vocab file"
 
 _, tmp_path = tempfile.mkstemp(prefix='dlm.tmp.')
 with open(input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
@@ -82,6 +99,8 @@ with open(input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 			tokens.insert(0, '<s>')
 		indices = []
 		for token in tokens:
+			if not word_to_id_dict.has_key(token):
+				token = "<unk>"
 			indices.append(str(word_to_id_dict[token]))
 		for i in range(ngram_size - 1, len(indices)):
 			tmp_file.write(' '.join(indices[i - ngram_size + 1 : i + 1]) + "\n")
