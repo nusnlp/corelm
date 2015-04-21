@@ -36,7 +36,7 @@ if args.input_vocab_path is None:
 			line = line.strip()
 			if len(line) == 0:
 				continue
-			tokens = line.strip().split()
+			tokens = line.split()
 			for token in tokens:
 				if not word_to_freq_dict.has_key(token):
 					word_to_freq_dict[token] = 1
@@ -80,7 +80,7 @@ with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 		line = line.strip()
 		if len(line) == 0:
 			continue
-		tokens = line.strip().split()
+		tokens = line.split()
 		for i in range(args.ngram_size - 1):
 			tokens.insert(0, '<s>')
 		indices = []
