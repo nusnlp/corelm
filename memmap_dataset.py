@@ -14,7 +14,7 @@ parser.add_argument("-i", "--input-file", dest="input_path", required=True, help
 parser.add_argument("-n", "--ngram-size", dest="ngram_size", required=True, type=int, help="Ngram Size.")
 parser.add_argument("-o", "--output-dir", dest="output_dir_path", required=True, help="Path to output directory.")
 parser.add_argument("--text", dest="text_output", action='store_true', help="Add this flag to produce text output.")
-parser.add_argument("--shuffle", dest="shuffle", action='store_true', help="Add this flag to shuffle text input.")
+parser.add_argument("--shuffle", dest="shuffle", action='store_true', help="Add this flag to shuffle the output.")
 
 # Mutually exculsive group of pruning arguments
 prune_args = parser.add_mutually_exclusive_group(required=True)
