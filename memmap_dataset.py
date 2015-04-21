@@ -14,6 +14,8 @@ parser.add_argument("-i", "--input-file", dest="input_path", required=True, help
 parser.add_argument("-n", "--ngram-size", dest="ngram_size", required=True, type=int, help="Ngram Size.")
 parser.add_argument("-o", "--output-dir", dest="output_dir_path", required=True, help="Path to output directory.")
 parser.add_argument("--text", dest="text_output", action='store_true', help="Add this flag to produce text output.")
+parser.add_argument("--shuffle", dest="shuffle", action='store_true', help="Add this flag to shuffle text input.")
+
 # Mutually exculsive group of pruning arguments
 prune_args = parser.add_mutually_exclusive_group(required=True)
 prune_args.add_argument("--prune-vocab-size", dest="prune_vocab_size", type=int, help="Vocabulary size. (Default: 10000)")
@@ -26,7 +28,13 @@ nsamples = 0						# Number of input samples to be mapped
 word_to_id_dict = dict()			# Word to Index Dictionary
 
 assert os.path.exists(args.output_dir_path), "Output directory does not exist!"
-output_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.mmap"
+
+if args.shuffle:
+	output_path =  args.output_dir_path+"/"+os.path.basename(args.input_path)+"idx.shuf.mmap"
+	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.shuf.txt"
+else:
+	output_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.mmap"
+	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.txt"
 
 if args.input_vocab_path is None:
 	# Counting the frequency of the words.
@@ -74,6 +82,10 @@ else:
 		assert ( word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>')), "Missing <s> or <unk> in given vocab file"
 
 _, tmp_path = tempfile.mkstemp(prefix='dlm.tmp.')
+
+# For shuffling only
+samples = []			# List of samples
+
 with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 	next_id = 0
 	for line in input_file:
@@ -89,8 +101,19 @@ with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 				token = "<unk>"
 			indices.append(str(word_to_id_dict[token]))
 		for i in range(args.ngram_size - 1, len(indices)):
-			tmp_file.write(' '.join(indices[i - args.ngram_size + 1 : i + 1]) + "\n")
+			sample = ' '.join(indices[i - args.ngram_size + 1 : i + 1]) + "\n"
+			if args.shuffle:
+				samples.append(sample) 	
+			else:
+				tmp_file.write(sample)
 			nsamples += 1
+
+# Shuffling the data and writing to tmp file
+if args.shuffle:
+	permutation_arr = np.random.permutation(nsamples)
+	with open(tmp_path, 'w') as tmp_file:
+		for index in permutation_arr:
+			tmp_file.write(samples[index])
 
 with open(tmp_path, 'r') as data:
 	fp = np.memmap(output_path, dtype='int32', mode='w+', shape=(nsamples + 1, args.ngram_size))
@@ -109,7 +132,6 @@ with open(tmp_path, 'r') as data:
 	del fp
 
 if args.text_output:
-	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.txt"
 	shutil.move(tmp_path, output_text_path)
 else:
 	os.remove(tmp_path)
