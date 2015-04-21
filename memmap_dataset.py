@@ -10,10 +10,10 @@ import argparse
 
 # Parsing arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", dest="input_path", required=True, help="Path to the input text file.")
+parser.add_argument("-i", "--input-file", dest="input_path", required=True, help="Path to the input text file.")
 parser.add_argument("-n", "--ngram-size", dest="ngram_size", required=True, type=int, help="Ngram Size.")
-parser.add_argument("-o", "--output", dest="output_path", required=True, help="Path to memory mapped output file.")
-parser.add_argument("-t", "--output-text", dest="output_text_path", help="Path to text output file.")
+parser.add_argument("-o", "--output-dir", dest="output_dir_path", required=True, help="Path to output directory.")
+parser.add_argument("--text", dest="text_output", action='store_true', help="Add this flag to produce text output.")
 # Mutually exculsive group of pruning arguments
 prune_args = parser.add_mutually_exclusive_group(required=True)
 prune_args.add_argument("--prune-vocab-size", dest="prune_vocab_size", type=int, help="Vocabulary size. (Default: 10000)")
@@ -24,6 +24,9 @@ args = parser.parse_args()
 
 nsamples = 0						# Number of input samples to be mapped
 word_to_id_dict = dict()			# Word to Index Dictionary
+
+assert os.path.exists(args.output_dir_path), "Output directory does not exist!"
+output_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.mmap"
 
 if args.input_vocab_path is None:
 	# Counting the frequency of the words.
@@ -47,11 +50,11 @@ if args.input_vocab_path is None:
 				del word_to_freq_dict[token]
 
 	# Writing the vocab file and creating a word to id dictionary.
-	vocab_path = args.input_path+".vocab" 
+	vocab_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".vocab" 
 	word_to_id_dict['<unk>'] = 0
 	word_to_id_dict['<s>'] = 1
-	curr_index = 2
 	with  open(vocab_path,'w') as f_vocab:
+		curr_index = 2
 		f_vocab.write('<unk>\n<s>\n')
 		tokens_freq_sorted = sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True)
 		if args.prune_vocab_size is not None and args.prune_vocab_size < len(tokens_freq_sorted):
@@ -90,7 +93,7 @@ with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 			nsamples += 1
 
 with open(tmp_path, 'r') as data:
-	fp = np.memmap(args.output_path, dtype='int32', mode='w+', shape=(nsamples + 1, args.ngram_size))
+	fp = np.memmap(output_path, dtype='int32', mode='w+', shape=(nsamples + 1, args.ngram_size))
 	fp[0,0] = nsamples					# number of samples
 	fp[0,1] = args.ngram_size			# n-gram size
 	fp[0,2] = len(word_to_id_dict)		# number of word types (MLP classes)
@@ -105,7 +108,8 @@ with open(tmp_path, 'r') as data:
 	fp.flush
 	del fp
 
-if args.output_text_path is not None:
-	shutil.move(tmp_path, args.output_text_path)
+if args.text_output:
+	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.txt"
+	shutil.move(tmp_path, output_text_path)
 else:
 	os.remove(tmp_path)
