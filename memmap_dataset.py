@@ -30,7 +30,7 @@ word_to_id_dict = dict()			# Word to Index Dictionary
 assert os.path.exists(args.output_dir_path), "Output directory does not exist!"
 
 if args.shuffle:
-	output_path =  args.output_dir_path+"/"+os.path.basename(args.input_path)+"idx.shuf.mmap"
+	output_path =  args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.shuf.mmap"
 	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.shuf.txt"
 else:
 	output_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.mmap"
