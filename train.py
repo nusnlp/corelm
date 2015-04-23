@@ -11,7 +11,8 @@ import time
 
 from dlm.io.lmDatasetReader import LMDatasetReader
 from dlm.io.irisDatasetReader import IRISDatasetReader
-from dlm.models.mlp import MLP
+#from dlm.models.mlp import MLP
+from dlm.models.ltmlp import MLP
 import dlm.utils as U
 
 def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, n_hidden=10):
@@ -23,17 +24,19 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 	print '... building the model'
 
 	index = T.lscalar()		# index to a [mini]batch
-	x = T.matrix('x')		# the data is presented as rasterized images
+	x = T.imatrix('x')		# the data is presented as rasterized images
 	y = T.ivector('y')		# the labels are presented as 1D vector of
 							# [int] labels
 	
 	rng = numpy.random.RandomState(1234)
-
+	
 	# construct the MLP class
 	classifier = MLP(
 		rng=rng,
 		input=x,
-		n_in=trainset.get_num_features(),
+		vocab_size=trainset.get_vocab_size(),
+		emb_dim=10,
+		ngram_size=trainset.get_ngram_size(),
 		n_hidden=n_hidden,
 		n_out=trainset.get_num_classes()
 	)
@@ -57,8 +60,8 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 		inputs=[index],
 		outputs=classifier.errors(y),
 		givens={
-			x: testset.get_features(index),
-			y: testset.get_label(index)
+			x: testset.get_x(index),
+			y: testset.get_y(index)
 		}
 	)
 	
@@ -66,8 +69,8 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 		inputs=[index],
 		outputs=classifier.errors(y),
 		givens={
-			x: devset.get_features(index),
-			y: devset.get_label(index)
+			x: devset.get_x(index),
+			y: devset.get_y(index)
 		}
 	)
 
@@ -76,8 +79,8 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 		outputs=cost,
 		updates=updates,
 		givens={
-			x: trainset.get_features(index),
-			y: trainset.get_label(index)
+			x: trainset.get_x(index),
+			y: trainset.get_y(index)
 		}
 	)
 
@@ -170,7 +173,7 @@ if __name__ == '__main__':
 	dev_path = sys.argv[2]
 	test_path = sys.argv[3]
 	
-	batch_size = 1
+	batch_size = 10
 	
 	trainset = LMDatasetReader(train_path, batch_size=batch_size)
 	devset = LMDatasetReader(dev_path, batch_size=batch_size)

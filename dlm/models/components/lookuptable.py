@@ -1,3 +1,4 @@
+import sys
 import theano
 import theano.tensor as T
 import numpy
@@ -19,10 +20,9 @@ class LookupTableLayer(object):
 			)
 
 		embeddings = theano.shared(value=emb_matrix, name='embeddings', borrow=True) # Check if borrowing makes any problems
-
+		
 		self.embeddings = embeddings
 
-		#self.output = T.dot(input, self.embeddings)
 		self.output = self.embeddings[input].reshape((input.shape[0], emb_dim * input.shape[1]))
 
 		# parameters of the model

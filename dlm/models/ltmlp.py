@@ -1,21 +1,23 @@
+from dlm.models.components.lookuptable import LookupTableLayer
 from dlm.models.components.hiddenlayer import HiddenLayer
 from dlm.models.components.logisticregression import LogisticRegression
 import theano.tensor as T
 
 class MLP(object):
 
-	def __init__(self, rng, input, n_in, n_hidden, n_out):
+	def __init__(self, rng, input, vocab_size, emb_dim, ngram_size, n_hidden, n_out):
 
-		self.embLayer = LookupTableLayer(
+		self.lookupTableLayer = LookupTableLayer(
 			rng=rng,
 			input=input,
-			emb_dim=emb_dim,
+			vocab_size=vocab_size,
+			emb_dim=emb_dim
 		)
 		
 		self.hiddenLayer = HiddenLayer(
 			rng=rng,
-			input=self.embLayer.output,
-			n_in=n_in,
+			input=self.lookupTableLayer.output,
+			n_in=(ngram_size - 1) * emb_dim,
 			n_out=n_hidden,
 			activation=T.tanh
 		)
