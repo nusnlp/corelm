@@ -8,6 +8,7 @@ import numpy
 import theano
 import theano.tensor as T
 import time
+import math
 
 from dlm.io.lmDatasetReader import LMDatasetReader
 from dlm.io.irisDatasetReader import IRISDatasetReader
@@ -128,8 +129,8 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 				validation_losses = [validate_model(i) for i in xrange(n_dev_batches)]
 				this_validation_loss = numpy.mean(validation_losses)
 
-				sum_dev_likelihood = sum([dev_negative_log_likelihood(i) for i in xrange(n_dev_batches)])
-				dev_perplexity = sum_dev_likelihood / n_dev_batches
+				dev_sum_neg_likelihood = sum([dev_negative_log_likelihood(i) for i in xrange(n_dev_batches)])
+				dev_perplexity = math.exp(dev_sum_neg_likelihood / n_dev_batches)
 
 				print(
 					'epoch %i, minibatch %i/%i, validation error %f %% , perplexity %f' %
