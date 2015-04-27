@@ -184,7 +184,9 @@ if __name__ == '__main__':
 	if len(sys.argv) != 4:
 		print "USAGE: python " + sys.argv[0] + " train_mmap dev_mmap test_mmap"
 		sys.exit()
-	
+	# Parsing arguments
+	parser = argparse.ArgumentParser()
+
 	train_path = sys.argv[1]
 	dev_path = sys.argv[2]
 	test_path = sys.argv[3]
