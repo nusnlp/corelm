@@ -1,29 +1,21 @@
-# README #
+# PrimeLM #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This is the best neural network language model ever!
 
-### What is this repository for? ###
+## Features ##
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* Theano stuff (GPU, ...)
+* Monolingual and bilingual LM
+* SMT support (Moses integration and re-scoring)
 
-### How do I get set up? ###
+## Installation ##
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+Just download the project.
 
-### Contribution guidelines ###
+## Getting Help ##
 
-* Writing tests
-* Code review
-* Other guidelines
+Run the scripts without any arguments and you will get a list of options.
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+## Running the code ##
+### Monolingual LM ###
+### Bilingual LM ###
