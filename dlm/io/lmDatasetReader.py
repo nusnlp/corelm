@@ -14,15 +14,21 @@ class LMDatasetReader(reader.Reader):
 	def __init__(self, dataset_path, batch_size=10):
 		
 		print "Initializing dataset from: " + dataset_path
+		
+		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')
 		self.num_samples = fp[0]
 		self.ngram = fp[1]
 		self.num_word_types = fp[2]
-		self.batch_size = batch_size
-		fp = fp.reshape((self.num_samples + 1, self.ngram))
-		x = fp[1:,0:self.ngram - 1]
-		y = fp[1:,self.ngram - 1]
+
+		# Setting minibatch size and number of mini batches
+		self.batch_size = batch_size	
 		self.num_batches = int(M.ceil(self.num_samples / batch_size))
+		
+		# Reading the matrix of samples
+		fp = fp.reshape((self.num_samples + 1, self.ngram))
+		x = fp[1:,0:self.ngram - 1]			# Reading the context indices
+		y = fp[1:,self.ngram - 1]			# Reading the output word index
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
 		self.shared_y = T.cast(theano.shared(y, borrow=True), 'int32')
 		print "Dataset initialized"
