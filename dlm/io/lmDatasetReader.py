@@ -17,9 +17,9 @@ class LMDatasetReader(reader.Reader):
 		
 		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')
-		self.num_samples = fp[0]							
-		self.ngram = fp[1]									
-		self.num_word_types = fp[2]						
+		self.num_samples = fp[0]
+		self.ngram = fp[1]
+		self.num_word_types = fp[2]
 
 		# Setting minibatch size and number of mini batches
 		self.batch_size = batch_size					
