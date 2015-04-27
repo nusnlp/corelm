@@ -22,11 +22,11 @@ class LMDatasetReader(reader.Reader):
 		self.num_word_types = fp[2]
 
 		# Setting minibatch size and number of mini batches
-		self.batch_size = batch_size					
+		self.batch_size = batch_size	
 		self.num_batches = int(M.ceil(self.num_samples / batch_size))
 		
 		# Reading the matrix of samples
-		fp = fp.reshape((self.num_samples + 1, self.ngram))	
+		fp = fp.reshape((self.num_samples + 1, self.ngram))
 		x = fp[1:,0:self.ngram - 1]			# Reading the context indices
 		y = fp[1:,self.ngram - 1]			# Reading the output word index
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
