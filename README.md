@@ -2,27 +2,42 @@
 
 This is the best neural network language model ever!
 
-## Features ##
+## 1. Features ##
 
 * Theano stuff (GPU, ...)
 * Monolingual and bilingual LM
 * SMT support (Moses integration and re-scoring)
 
-## Installation ##
+## 2. Installation ##
 
 Just download the project.
 
-## Getting Help ##
+## 3. Getting Help ##
 
 Run the scripts without any arguments and you will get a list of options.
 
-## Monolingual LM ##
+## 4. Monolingual LM ##
 ### Preparing Data ###
-### Running the Code ###
+```
+#!bash
+$ kkk
+```
+### Training ###
+```
+#!bash
+$ kkk
+```
 
-## Bilingual LM ##
+
+
+
+## 5. Bilingual LM ##
 ### Preparing Data ###
-### Running the code ###
+```
+#!bash
+$ kkk
+```
+### Training ###
 ```
 #!bash
 $ kkk
