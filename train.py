@@ -188,7 +188,7 @@ if __name__ == '__main__':
 	dev_path = sys.argv[2]
 	test_path = sys.argv[3]
 	
-	batch_size = 10
+	batch_size = 128
 	
 	trainset = LMDatasetReader(train_path, batch_size=batch_size)
 	devset = LMDatasetReader(dev_path, batch_size=batch_size)
