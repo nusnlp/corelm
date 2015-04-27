@@ -16,18 +16,14 @@ Just download the project.
 
 Run the scripts without any arguments and you will get a list of options.
 
-## Preparing Data ##
+## Monolingual LM ##
+### Preparing Data ###
+### Running the Code ###
 
-
+## Bilingual LM ##
+### Preparing Data ###
+### Running the code ###
 ```
 #!bash
 $ kkk
-
 ```
-
-
-## Running the Code ##
-
-### Monolingual LM ###
-
-### Bilingual LM ###
