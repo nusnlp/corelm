@@ -9,7 +9,7 @@ import numpy as np
 
 class Evaluator():
 
-def __init__(self, dataset, classifier):
+	def __init__(self, dataset, classifier):
 		self.dataset = dataset							# Initializing the dataset
 		self.num_batches = dataset.get_num_batches()	# Number of minibatches in the dataset
 
@@ -17,7 +17,7 @@ def __init__(self, dataset, classifier):
 		x = classifier.input
 		y = T.ivector('y')
 
-self.classifier = classifier
+		self.classifier = classifier
 		self.output = self.classifier.negative_log_likelihood(y)
 
 
