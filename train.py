@@ -9,11 +9,13 @@ import theano
 import theano.tensor as T
 import time
 import math
+import argparse
 
 from dlm.io.lmDatasetReader import LMDatasetReader
 from dlm.io.irisDatasetReader import IRISDatasetReader
 #from dlm.models.mlp import MLP
 from dlm.models.ltmlp import MLP
+from dlm import eval
 import dlm.utils as U
 
 def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, n_hidden=10):
@@ -21,7 +23,8 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 	n_train_batches = trainset.get_num_batches()
 	n_dev_batches = devset.get_num_batches()
 	n_test_batches = testset.get_num_batches()
-
+	
+	
 	print '... building the model'
 
 	index = T.lscalar()		# index to a [mini]batch
@@ -42,6 +45,7 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 		n_out=trainset.get_num_classes()
 	)
 
+
 	cost = (
 		classifier.negative_log_likelihood(y)
 		#+ L1_reg * classifier.L1
@@ -55,6 +59,7 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 		for param, gparam in zip(classifier.params, gparams)
 	]
 
+	dev_eval = eval.Evaluator(dataset=devset, classifier=classifier)
 	#f = theano.function([index], dataset.get_features(index))
 
 	test_model = theano.function(
@@ -85,14 +90,6 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 		}
 	)
 
-	dev_negative_log_likelihood = theano.function(
-		inputs=[index],
-		outputs=classifier.negative_log_likelihood(y),
-		givens={
-			x: devset.get_x(index),
-			y: devset.get_y(index)
-		}
-	)
 
 
 	print '... training'
@@ -129,8 +126,6 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 				validation_losses = [validate_model(i) for i in xrange(n_dev_batches)]
 				this_validation_loss = numpy.mean(validation_losses)
 
-				dev_sum_neg_likelihood = sum([dev_negative_log_likelihood(i) for i in xrange(n_dev_batches)])
-				dev_perplexity = math.exp(dev_sum_neg_likelihood / n_dev_batches)
 
 				print(
 					'epoch %i, minibatch %i/%i, validation error %f %% , perplexity %f' %
@@ -139,7 +134,8 @@ def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=
 						minibatch_index + 1,
 						n_train_batches,
 						this_validation_loss * 100.,
-						dev_perplexity
+						dev_eval.perplexity(),
+
 					)
 				)
 
@@ -183,7 +179,9 @@ if __name__ == '__main__':
 	if len(sys.argv) != 4:
 		print "USAGE: python " + sys.argv[0] + " train_mmap dev_mmap test_mmap"
 		sys.exit()
-	
+	# Parsing arguments
+	parser = argparse.ArgumentParser()
+
 	train_path = sys.argv[1]
 	dev_path = sys.argv[2]
 	test_path = sys.argv[3]

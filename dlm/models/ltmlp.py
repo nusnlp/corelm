@@ -7,13 +7,16 @@ class MLP(object):
 
 	def __init__(self, rng, input, vocab_size, emb_dim, ngram_size, n_hidden, n_out):
 
+
+		self.input = input
+
 		self.lookupTableLayer = LookupTableLayer(
 			rng=rng,
 			input=input,
 			vocab_size=vocab_size,
 			emb_dim=emb_dim
 		)
-		
+
 		self.hiddenLayer = HiddenLayer(
 			rng=rng,
 			input=self.lookupTableLayer.output,
