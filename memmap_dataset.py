@@ -6,7 +6,7 @@ import sys, os
 import tempfile
 import shutil
 import argparse
-
+import dlm.utils as U
 
 # Parsing arguments
 parser = argparse.ArgumentParser()
@@ -24,17 +24,22 @@ prune_args.add_argument("--input-vocab-file", dest="input_vocab_path", help="Pat
 
 args = parser.parse_args()
 
-nsamples = 0						# Number of input samples to be mapped
-word_to_id_dict = dict()			# Word to Index Dictionary
+U.xassert(args.ngram_size > 2, "N-gram sizes of less than 3 is not supported yet, because of our memory-mapped file format")
 
-assert os.path.exists(args.output_dir_path), "Output directory does not exist!"
+if (not os.path.exists(args.output_dir_path)):
+	os.makedirs(args.output_dir_path)
+print("Output directory: " + os.path.abspath(args.output_dir_path))
+
+prefix = args.output_dir_path+"/"+os.path.basename(args.input_path)
 
 if args.shuffle:
-	output_path =  args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.shuf.mmap"
-	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.shuf.txt"
+	output_path = prefix + ".idx.shuf.mmap"
+	output_text_path = prefix + ".idx.shuf.txt"
 else:
-	output_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.mmap"
-	output_text_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".idx.txt"
+	output_path = prefix + ".idx.mmap"
+	output_text_path = prefix + ".idx.txt"
+
+word_to_id_dict = dict()			# Word to Index Dictionary
 
 if args.input_vocab_path is None:
 	# Counting the frequency of the words.
@@ -58,7 +63,7 @@ if args.input_vocab_path is None:
 				del word_to_freq_dict[token]
 
 	# Writing the vocab file and creating a word to id dictionary.
-	vocab_path = args.output_dir_path+"/"+os.path.basename(args.input_path)+".vocab" 
+	vocab_path = prefix + ".vocab"
 	word_to_id_dict['<unk>'] = 0
 	word_to_id_dict['<s>'] = 1
 	with  open(vocab_path,'w') as f_vocab:
@@ -67,25 +72,27 @@ if args.input_vocab_path is None:
 		tokens_freq_sorted = sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True)
 		if args.prune_vocab_size is not None and args.prune_vocab_size < len(tokens_freq_sorted):
 			tokens_freq_sorted = tokens_freq_sorted[0:args.prune_vocab_size]
-		for token in tokens_freq_sorted :
+		for token in tokens_freq_sorted:
 			f_vocab.write(token+"\n")
-			word_to_id_dict[token]=curr_index
+			word_to_id_dict[token] = curr_index
 			curr_index = curr_index + 1
 else:
-	with open(args.input_vocab_path,'r') as f_vocab:
+	with open(args.input_vocab_path, 'r') as f_vocab:
 		curr_index = 0
 		for line in f_vocab:
 			token = line.strip()
 			if not word_to_id_dict.has_key(token):
 				word_to_id_dict[token] = curr_index
 			curr_index = curr_index + 1
-		assert ( word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>')), "Missing <s> or <unk> in given vocab file"
+		U.xassert(word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>'), "Missing <s> or <unk> in given vocab file")
 
 _, tmp_path = tempfile.mkstemp(prefix='dlm.tmp.')
 
 # For shuffling only
 samples = []			# List of samples
+nsamples = 0
 
+# Reading input text file to create IDX file
 with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 	next_id = 0
 	for line in input_file:
@@ -103,7 +110,7 @@ with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 		for i in range(args.ngram_size - 1, len(indices)):
 			sample = ' '.join(indices[i - args.ngram_size + 1 : i + 1]) + "\n"
 			if args.shuffle:
-				samples.append(sample) 	
+				samples.append(sample)
 			else:
 				tmp_file.write(sample)
 			nsamples += 1
@@ -115,6 +122,8 @@ if args.shuffle:
 		for index in permutation_arr:
 			tmp_file.write(samples[index])
 
+
+# Creating the memory-mapped file
 with open(tmp_path, 'r') as data:
 	fp = np.memmap(output_path, dtype='int32', mode='w+', shape=(nsamples + 1, args.ngram_size))
 	fp[0,0] = nsamples					# number of samples

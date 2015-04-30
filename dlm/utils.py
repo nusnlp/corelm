@@ -61,6 +61,10 @@ def usage(message):
 	
 #-----------------------------------------------------------------------------------------------------------#
 	
+def xassert(condition, message):
+	if not condition:
+		error(message)
+
 def assert_value(value, valid_values):
 	assert type(valid_values) == list, "valid_values must be a list, given: " + str(type(valid_values))
 	assert value in valid_values, "Invalid value: " + str(value) + " is not in " + str(valid_values)
