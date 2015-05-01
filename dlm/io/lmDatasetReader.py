@@ -31,7 +31,6 @@ class LMDatasetReader(reader.Reader):
 		y = fp[1:,self.ngram - 1]			# Reading the output word index
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
 		self.shared_y = T.cast(theano.shared(y, borrow=True), 'int32')
-		print "Dataset initialized"
 	
 	#### Accessors
 	

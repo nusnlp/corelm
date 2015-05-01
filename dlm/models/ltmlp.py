@@ -47,4 +47,4 @@ class MLP(object):
 
 		self.errors = self.logRegressionLayer.errors
 
-		self.params = self.hiddenLayer.params + self.logRegressionLayer.params
+		self.params = self.lookupTableLayer.params + self.hiddenLayer.params + self.logRegressionLayer.params
