@@ -1,9 +1,10 @@
 from dlm.models.components.lookuptable import LookupTableLayer
 from dlm.models.components.hiddenlayer import HiddenLayer
 from dlm.models.components.logisticregression import LogisticRegression
+from dlm.models import classifier
 import theano.tensor as T
 
-class MLP(object):
+class MLP(classifier.Classifier):
 
 	def __init__(self, rng, input, vocab_size, emb_dim, ngram_size, n_hidden, n_out):
 
