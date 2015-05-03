@@ -4,7 +4,7 @@ import theano
 class Classifier:
 
 	def __init__(self):
-		params = []		
+		self.params = []		
 
 	def get_params(self):
 		return self.params
