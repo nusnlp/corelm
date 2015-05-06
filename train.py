@@ -16,7 +16,7 @@ from dlm.io.irisDatasetReader import IRISDatasetReader
 #from dlm.models.mlp import MLP
 from dlm.models.ltmlp import MLP
 from dlm import eval
-import dlm.utils as U
+import dlmutils.utils as U
 
 def test_mlp(trainset, devset, testset, learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100, n_hidden=10):
 

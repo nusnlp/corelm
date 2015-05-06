@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import numpy as np
-import theano
 import sys, os
 import tempfile
 import shutil
 import argparse
-import dlm.utils as U
+import dlmutils.utils as U
 
 # Parsing arguments
 parser = argparse.ArgumentParser()

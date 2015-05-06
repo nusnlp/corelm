@@ -1,5 +1,5 @@
 from __future__ import division
-import dlm.utils as U
+import dlmutils.utils as U
 import reader
 import numpy as np
 import theano

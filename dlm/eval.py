@@ -3,7 +3,7 @@ import theano.tensor as T
 from dlm.io.lmDatasetReader import LMDatasetReader
 from dlm.io.irisDatasetReader import IRISDatasetReader
 from dlm.models.ltmlp import MLP
-import dlm.utils as U
+import dlmutils.utils as U
 import math
 import numpy as np
 
