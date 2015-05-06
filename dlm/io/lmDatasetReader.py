@@ -11,7 +11,7 @@ class LMDatasetReader(reader.Reader):
 	
 	#### Constructor
 	
-	def __init__(self, dataset_path, batch_size=10):
+	def __init__(self, dataset_path, batch_size=500):
 		
 		print "Initializing dataset from: " + dataset_path
 		
@@ -22,8 +22,8 @@ class LMDatasetReader(reader.Reader):
 		self.num_word_types = fp[2]
 
 		# Setting minibatch size and number of mini batches
-		self.batch_size = batch_size	
-		self.num_batches = int(M.ceil(self.num_samples / batch_size))
+		self.batch_size = batch_size
+		self.num_batches = int(M.ceil(self.num_samples / self.batch_size))
 		
 		# Reading the matrix of samples
 		fp = fp.reshape((self.num_samples + 1, self.ngram))

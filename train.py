@@ -189,8 +189,8 @@ if __name__ == '__main__':
 	batch_size = 128
 	
 	trainset = LMDatasetReader(train_path, batch_size=batch_size)
-	devset = LMDatasetReader(dev_path, batch_size=batch_size)
-	testset = LMDatasetReader(test_path, batch_size=batch_size)
+	devset = LMDatasetReader(dev_path)
+	testset = LMDatasetReader(test_path)
 	
 	#dataset = IRISDatasetReader("iris.txt", batch_size=5)
 	# check OMP variable
