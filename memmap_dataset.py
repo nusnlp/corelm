@@ -17,7 +17,7 @@ parser.add_argument("--shuffle", dest="shuffle", action='store_true', help="Add 
 
 # Mutually exculsive group of pruning arguments
 prune_args = parser.add_mutually_exclusive_group(required=True)
-prune_args.add_argument("--prune-vocab-size", dest="prune_vocab_size", type=int, help="Vocabulary size. (Default: 10000)")
+prune_args.add_argument("--prune-vocab-size", dest="prune_vocab_size", type=int, help="Vocabulary size")
 prune_args.add_argument("--prune-threshold",  dest="prune_threshold_count", type=int, help="Minimum number of occurances for a word to be added into vocabulary")
 prune_args.add_argument("--input-vocab-file", dest="input_vocab_path", help="Path to an existing vocabulary file")
 
