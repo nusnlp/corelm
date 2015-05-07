@@ -58,6 +58,10 @@ def info(message):
 def usage(message):
 	sys.stderr.write("[USAGE] " + message + "\n")
 	sys.exit()
+
+def exception():
+	sys.stderr.write("[ERROR] " + str(sys.exc_info()[0].mro()[0].__name__) + ": " + sys.exc_info()[1].message + "\n")
+	sys.exit()
 	
 #-----------------------------------------------------------------------------------------------------------#
 	

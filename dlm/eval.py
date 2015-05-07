@@ -1,3 +1,4 @@
+import time
 from theano import *
 import theano.tensor as T
 from dlm.io.lmDatasetReader import LMDatasetReader
@@ -29,7 +30,19 @@ class Evaluator():
 				y: self.dataset.get_y(index)
 			}
 		)
+		
+		self.batch_error = theano.function(
+			inputs=[index],
+			outputs=classifier.errors(y),
+			givens={
+				x: dataset.get_x(index),
+				y: dataset.get_y(index)
+			}
+		)
 
+	def classification_error(self):
+		return np.mean([self.batch_error(i) for i in xrange(self.num_batches)])
+	
 	def mean_neg_log_likelihood(self):
 		return np.mean([self.batch_neg_log_likelihood(i) for i in xrange(self.num_batches)])
 

@@ -13,7 +13,7 @@ class LMDatasetReader(reader.Reader):
 	
 	def __init__(self, dataset_path, batch_size=500):
 		
-		print "Initializing dataset from: " + dataset_path
+		U.info("Initializing dataset from: " + dataset_path)
 		
 		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')

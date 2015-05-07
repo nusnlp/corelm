@@ -6,7 +6,7 @@ import theano.tensor as T
 
 class MLP(classifier.Classifier):
 
-	def __init__(self, rng, input, vocab_size, emb_dim, ngram_size, n_hidden, n_out):
+	def __init__(self, rng, input, vocab_size, emb_dim, ngram_size, num_hidden, n_out):
 
 
 		self.input = input
@@ -22,13 +22,13 @@ class MLP(classifier.Classifier):
 			rng=rng,
 			input=self.lookupTableLayer.output,
 			n_in=(ngram_size - 1) * emb_dim,
-			n_out=n_hidden,
+			n_out=num_hidden,
 			activation=T.tanh
 		)
 
 		self.logRegressionLayer = LogisticRegression(
 			input=self.hiddenLayer.output,
-			n_in=n_hidden,
+			n_in=num_hidden,
 			n_out=n_out
 		)
 
