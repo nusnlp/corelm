@@ -1,3 +1,4 @@
+from __future__ import division
 import theano
 import theano.tensor as T
 from dlm import eval
@@ -35,6 +36,8 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	
 	U.info('Training')
 	start_time = time.time()
+	verbose_freq = 1000 # minibatches
+	proc_time = start_time
 
 	while (epoch < args.num_epochs) and (not done_looping):
 		epoch = epoch + 1
@@ -43,10 +46,12 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 		for minibatch_index in xrange(n_train_batches):
 			minibatch_avg_cost = trainer.step(minibatch_index)
 			minibatch_avg_cost_sum += minibatch_avg_cost
-			if minibatch_index % 1000 == 0:
-				print time.ctime() + ", " + str(minibatch_index) + "/" + str(n_train_batches) + ", " + str(minibatch_avg_cost_sum/(minibatch_index+1))
+			
 			# iteration number
 			iter = (epoch - 1) * n_train_batches + minibatch_index
+			
+			if minibatch_index % verbose_freq == 0:
+				print time.ctime() + ", " + str(minibatch_index) + "/" + str(n_train_batches) + ", " + str(minibatch_avg_cost_sum/(minibatch_index+1))
 
 			if (iter + 1) % validation_frequency == 0:
 				dev_error = dev_eval.classification_error()
@@ -66,24 +71,29 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 					#if (dev_perplexity < best_dev_perplexity * improvement_threshold):
 					#	patience = max(patience, iter * patience_increase)
 
-				print('epoch %i, minibatch %i/%i, dev error %f %%, perplexity %f (best: %f)' % (
+				rem_time = int((args.num_epochs * n_train_batches - iter) * (time.time() - proc_time) / (validation_frequency * 60))
+				proc_time = time.time()
+				
+				print('epoch %i, minibatch %i/%i, dev error %f %%, perplexity %f (best: %f), %im' % (
 						epoch,
 						minibatch_index + 1,
 						n_train_batches,
-						dev_error,
+						dev_error * 100.,
 						dev_perplexity,
-						best_dev_perplexity
+						best_dev_perplexity,
+						rem_time
 					)
 				)
 				
 				if args.testset:
-					print('epoch %i, minibatch %i/%i, test error %f %%, perplexity %f (best: %f)' % (
+					print('epoch %i, minibatch %i/%i, test error %f %%, perplexity %f (best: %f), %im' % (
 							epoch,
 							minibatch_index + 1,
 							n_train_batches,
-							test_error,
+							test_error * 100.,
 							test_perplexity,
-							best_test_perplexity
+							best_test_perplexity,
+							rem_time
 						)
 					)
 
@@ -95,7 +105,7 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	end_time = time.time()
 
 	print('Optimization complete')
-	print('Best validation score of %f %% obtained at iteration %i' % (best_validation_loss * 100., best_iter + 1))
+	print('Best dev perplexity: %f at iteration %i' % (best_dev_perplexity, best_iter + 1))
 	if args.testset:
-		print(('Test score at iteration %i is %f %%') % (best_iter + 1, test_score * 100.))
-	print >> sys.stderr, 'Ran for %fm' % ((end_time - start_time) / 60.)
+		print(('Test perplexity at iteration %i: %f') % (best_iter + 1, best_test_perplexity))
+	print >> sys.stderr, 'Ran for %.2fm' % ((end_time - start_time) / 60.)
