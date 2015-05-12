@@ -24,24 +24,23 @@ class LogisticRegression(object):
 			borrow=True
 		)
 
-		self.p_y_given_x = T.nnet.softmax(T.dot(input, self.W) + self.b)
+		self.p_y_given_x_matrix = T.nnet.softmax(T.dot(input, self.W) + self.b)
 
-		self.y_pred = T.argmax(self.p_y_given_x, axis=1)
+		self.y_pred = T.argmax(self.p_y_given_x_matrix, axis=1)
 
 		# parameters of the model
 		self.params = [self.W, self.b]
+	
+	def p_y_given_x(self, y):
+		return self.p_y_given_x_matrix[T.arange(y.shape[0]), y]
 
 	def negative_log_likelihood(self, y):
-		return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
+		return -T.mean(T.log(self.p_y_given_x_matrix)[T.arange(y.shape[0]), y]) # ***** T.log operates on the whole matrix. Can we do it only on the output list? ***** #
 		
 	def errors(self, y):
 		if y.ndim != self.y_pred.ndim:
-			raise TypeError(
-				'y should have the same shape as self.y_pred',
-				('y', y.type, 'y_pred', self.y_pred.type)
-			)
-			
+			raise TypeError('y should have the same shape as self.y_pred', ('y', y.type, 'y_pred', self.y_pred.type))
 		if y.dtype.startswith('int'):
-			return T.mean(T.neq(self.y_pred, y))
+			return T.sum(T.neq(self.y_pred, y))
 		else:
 			raise NotImplementedError()

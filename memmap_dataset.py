@@ -5,7 +5,7 @@ import sys, os
 import tempfile
 import shutil
 import argparse
-import dlmutils.utils as U
+import dlm.utils as U
 
 # Parsing arguments
 parser = argparse.ArgumentParser()

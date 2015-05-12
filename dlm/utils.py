@@ -98,3 +98,43 @@ def mkdir_p(path):
 
 def num_lines(path):
 	return sum(1 for line in open(path))
+
+#-----------------------------------------------------------------------------------------------------------#
+
+def get_all_windows(input_list, window_size):
+	if window_size <= 1:
+		return input_list
+	output = []
+	for i in range(len(input_list) - window_size + 1):
+		output.append(input_list[i:i+window_size])
+	return output
+
+#-----------------------------------------------------------------------------------------------------------#
+
+def set_theano_device(device):
+	import sys
+	xassert(device == "cpu" or device == "gpu", "The device can only be 'cpu' or 'gpu'")
+	xassert(sys.modules.has_key('theano') == False, "dlm.utils.set_theano_device() function cannot be called after importing theano")
+	os.environ['THEANO_FLAGS'] = 'device=' + device
+	os.environ['THEANO_FLAGS'] += ',force_device=True'
+	os.environ['THEANO_FLAGS'] += ',floatX=float32'
+	os.environ['THEANO_FLAGS'] += ',print_active_device=False'
+	os.environ['THEANO_FLAGS'] += ',mode=FAST_RUN'
+	os.environ['THEANO_FLAGS'] += ',nvcc.fastmath=True' # makes div and sqrt faster at the cost of precision
+	try:
+		import theano
+	except EnvironmentError:
+		exception()
+	if theano.config.device == "gpu":
+		info(
+			"Device: " + theano.config.device.upper() + " "
+			+ str(theano.sandbox.cuda.active_device_number())
+			+ " (" + str(theano.sandbox.cuda.active_device_name()) + ")"
+		)
+	else:
+		info("Device: " + theano.config.device.upper())
+
+
+
+
+

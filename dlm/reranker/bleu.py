@@ -1,7 +1,7 @@
 from __future__ import division
 import sys
 import math
-import dlmutils.utils as U
+import dlm.utils as U
 
 ###################################################################
 ## BLEU utility functions
@@ -118,8 +118,8 @@ def add_epsilon_smoothing(hyp, refs_list, eps=0.01):
 ###################################################################
 	
 # Lin and Och, 2004
-def add_one_smoothing(hyp, refs_list):
-	l = [0, 0, 0, 0]
+def lin_smoothing(hyp, refs_list):
+	l = [0, 1, 1, 1]
 	m = [0, 1, 1, 1]
 	log_p = [0, 0, 0, 0]
 	
@@ -141,6 +141,74 @@ def add_one_smoothing(hyp, refs_list):
 					m[k] += hyp_dicts[k][w]
 			if (m[k] == 0): # It can happen when unigram count m[0] is zero
 				return 0
+			else:
+				log_p[k] = math.log(m[k]) - math.log(l[k])
+		sum_log_p += log_p[k]
+	log_brevity = min(0, 1 - closest_ref_len/len(hyp_tokens))
+	return math.exp(1/4 * sum_log_p + log_brevity)
+
+###################################################################
+
+# NIST (mteval-v13a.pl) smoothing
+def nist_smoothing(hyp, refs_list):
+	l = [0, 0, 0, 0]
+	m = [0, 0, 0, 0]
+	log_p = [0, 0, 0, 0]
+	
+	hyp_tokens = hyp.split()
+	
+	hyp_dicts = get_ngram_counts(hyp_tokens)
+	ref_dicts, closest_ref_len = get_max_ngram_counts(refs_list, len(hyp_tokens))
+	
+	clip_ngram_counts(hyp_dicts, ref_dicts)
+	
+	invcnt = 1
+	sum_log_p = 0
+	for k in range(0,4):
+		l[k] = max(len(hyp_tokens) - k, 0)
+		if l[k] == 0: # sentence length is less than 4
+			log_p[k] = 0
+		else:
+			for w in hyp_dicts[k]:
+				if ref_dicts[k].has_key(w):
+					m[k] += hyp_dicts[k][w]
+			if (m[k] == 0):
+				invcnt *= 2
+				log_p[k] = math.log(1/invcnt) - math.log(l[k])
+			else:
+				log_p[k] = math.log(m[k]) - math.log(l[k])
+		sum_log_p += log_p[k]
+	log_brevity = min(0, 1 - closest_ref_len/len(hyp_tokens))
+	return math.exp(1/4 * sum_log_p + log_brevity)
+	
+###################################################################
+
+# Chen and Cherry (2014) smoothing 4
+def chen_smoothing(hyp, refs_list, coef=5):
+	l = [0, 0, 0, 0]
+	m = [0, 0, 0, 0]
+	log_p = [0, 0, 0, 0]
+	
+	hyp_tokens = hyp.split()
+	
+	hyp_dicts = get_ngram_counts(hyp_tokens)
+	ref_dicts, closest_ref_len = get_max_ngram_counts(refs_list, len(hyp_tokens))
+	
+	clip_ngram_counts(hyp_dicts, ref_dicts)
+	
+	invcnt = 1
+	sum_log_p = 0
+	for k in range(0,4):
+		l[k] = max(len(hyp_tokens) - k, 0)
+		if l[k] == 0: # sentence length is less than 4
+			log_p[k] = 0
+		else:
+			for w in hyp_dicts[k]:
+				if ref_dicts[k].has_key(w):
+					m[k] += hyp_dicts[k][w]
+			if (m[k] == 0):
+				invcnt *= coef / math.log(len(hyp_tokens) + 1)
+				log_p[k] = math.log(1/invcnt) - math.log(l[k])
 			else:
 				log_p[k] = math.log(m[k]) - math.log(l[k])
 		sum_log_p += log_p[k]

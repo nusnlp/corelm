@@ -1,10 +1,10 @@
+import sys
 import time
 from theano import *
 import theano.tensor as T
-from dlm.io.lmDatasetReader import LMDatasetReader
-from dlm.io.irisDatasetReader import IRISDatasetReader
+from dlm.io.mmapReader import MemMapReader
 from dlm.models.ltmlp import MLP
-import dlmutils.utils as U
+import dlm.utils as U
 import math
 import numpy as np
 
@@ -13,25 +13,22 @@ class Evaluator():
 	def __init__(self, dataset, classifier):
 		self.dataset = dataset							# Initializing the dataset
 		self.num_batches = dataset.get_num_batches()	# Number of minibatches in the dataset
+		self.num_samples = dataset._get_num_samples()	# Number of samples in the dataset
 
 		index = T.lscalar()
 		x = classifier.input
 		y = T.ivector('y')
-
-		self.classifier = classifier
-		self.output = self.classifier.negative_log_likelihood(y)
-
-
-		self.batch_neg_log_likelihood = theano.function(
+		
+		self.neg_sum_batch_log_likelihood = theano.function(
 			inputs=[index],
-			outputs=self.classifier.negative_log_likelihood(y),
+			outputs=-T.sum(T.log(classifier.p_y_given_x(y))),
 			givens={
 				x: self.dataset.get_x(index),
 				y: self.dataset.get_y(index)
 			}
 		)
 		
-		self.batch_error = theano.function(
+		self.sum_batch_error = theano.function(
 			inputs=[index],
 			outputs=classifier.errors(y),
 			givens={
@@ -39,12 +36,24 @@ class Evaluator():
 				y: dataset.get_y(index)
 			}
 		)
+		
+		# x: A matrix (N * (ngram - 1)) representing the sequence of length N
+		# y: A vector of class labels
+		self.sequence_log_prob = self.neg_sum_batch_log_likelihood
 
 	def classification_error(self):
-		return np.mean([self.batch_error(i) for i in xrange(self.num_batches)])
-	
+		return np.sum([self.batch_error(i) for i in xrange(self.num_batches)]) / self.num_samples
+		
 	def mean_neg_log_likelihood(self):
-		return np.mean([self.batch_neg_log_likelihood(i) for i in xrange(self.num_batches)])
-
+		return np.sum([self.neg_sum_batch_log_likelihood(i) for i in xrange(self.num_batches)]) / self.num_samples
+	
 	def perplexity(self):
 		return math.exp(self.mean_neg_log_likelihood())
+
+	def get_sequence_log_prob(self, index):
+		return - self.sequence_log_prob(index)
+
+
+
+
+

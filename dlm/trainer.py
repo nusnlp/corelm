@@ -2,7 +2,7 @@ from __future__ import division
 import theano
 import theano.tensor as T
 from dlm import eval
-import dlmutils.utils as U
+import dlm.utils as U
 import time
 import numpy
 import sys

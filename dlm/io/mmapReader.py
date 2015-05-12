@@ -1,13 +1,12 @@
 from __future__ import division
-import dlmutils.utils as U
-import reader
+import dlm.utils as U
 import numpy as np
 import theano
 import theano.tensor as T
 import math as M
 import sys
 
-class LMDatasetReader(reader.Reader):
+class MemMapReader():
 	
 	#### Constructor
 	
@@ -41,6 +40,9 @@ class LMDatasetReader(reader.Reader):
 		return self.shared_y[index * self.batch_size : (index+1) * self.batch_size]
 	
 	#### INFO
+	
+	def _get_num_samples(self):
+		return self.num_samples
 	
 	def get_num_batches(self):
 		return self.num_batches

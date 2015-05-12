@@ -1,5 +1,5 @@
 import sys
-import dlmutils.utils as U
+import dlm.utils as U
 import codecs
 
 class NBestList():
@@ -11,6 +11,7 @@ class NBestList():
 		self.curr_item = None
 		self.curr_index = 0
 		self.eof_flag = False
+		self.ref_manager = None
 		if reference_list:
 			U.xassert(mode == 'r', "Cannot accept a reference_list in 'w' mode")
 			self.ref_manager = RefernceManager(reference_list)
@@ -84,7 +85,7 @@ class NBestItem:
 
 
 class NBestGroup:
-	def __init__(self, refrence_manager):
+	def __init__(self, refrence_manager=None):
 		self.group_index = -1
 		self.group = []
 		self.ref_manager = refrence_manager
@@ -102,11 +103,12 @@ class NBestGroup:
 	def add(self, item):
 		if item is None:
 			return
-		if self.group_index != -1:
-			U.xassert(item.index == self.group_index, "Cannot add an nbest item with an incompatible index")
-		else:
+		if self.group_index == -1:
 			self.group_index = item.index
-			self.refs = self.ref_manager.get_all_refs(self.group_index)
+			if self.ref_manager:
+				self.refs = self.ref_manager.get_all_refs(self.group_index)
+		else:
+			U.xassert(item.index == self.group_index, "Cannot add an nbest item with an incompatible index")
 		self.group.append(item)
 		
 	def next(self):

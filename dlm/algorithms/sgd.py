@@ -1,4 +1,3 @@
-import dlmutils.utils as U
 import theano.tensor as T
 import theano
 
