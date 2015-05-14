@@ -1,6 +1,8 @@
+import numpy
+import theano
 import theano.tensor as T
 
-class Linear(object):
+class Linear():
 
 	def __init__(self, rng, input, n_in, n_out, W=None, b=None):
 
@@ -15,8 +17,7 @@ class Linear(object):
 				),
 				dtype=theano.config.floatX
 			)
-
-		W = theano.shared(value=W_values, name='W', borrow=True)
+			W = theano.shared(value=W_values, name='W', borrow=True)
 
 		if b is None:
 			b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)

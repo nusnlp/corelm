@@ -21,91 +21,63 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	if testset:
 		test_eval = eval.Evaluator(dataset=testset, classifier=classifier)
 
-	patience = 10000											# look as this many examples regardless
-	patience_increase = 2										# wait this much longer when a new best is found
-	improvement_threshold = 0.995								# a relative improvement of this much is considered significant
-	validation_frequency = min(n_train_batches, patience / 2)	# go through this many minibatche before
-																# checking the network on the validation set;
-																# in this case we check every epoch
 	best_dev_perplexity = numpy.inf
 	best_test_perplexity = numpy.inf
 	best_iter = 0
-
 	epoch = 0
-	done_looping = False
+	verbose_freq = 1000 # minibatches
+	validation_frequency = 5000 # minibatches
+	start_time = time.time()
+	proc_time = start_time
 	
 	U.info('Training')
-	start_time = time.time()
-	verbose_freq = 1000 # minibatches
-	proc_time = start_time
 
-	while (epoch < args.num_epochs) and (not done_looping):
+	while (epoch < args.num_epochs):
 		epoch = epoch + 1
-		print "Epoch " + str(epoch)
+		U.info("Epoch: " + U.BColors.RED + str(epoch) + U.BColors.ENDC)
 		minibatch_avg_cost_sum = 0
 		for minibatch_index in xrange(n_train_batches):
 			minibatch_avg_cost = trainer.step(minibatch_index)
 			minibatch_avg_cost_sum += minibatch_avg_cost
 			
+			if minibatch_index % verbose_freq == 0:
+				#U.info(U.BColors.BLUE + "[" + time.ctime() + "] " + U.BColors.ENDC + str(minibatch_index) + "/" + str(n_train_batches) + ", " + str(minibatch_avg_cost_sum/(minibatch_index+1)))
+				U.info(U.BColors.BLUE + "[" + time.ctime() + "] " + U.BColors.ENDC + '%i/%i, %.2f' % (minibatch_index, n_train_batches, minibatch_avg_cost_sum/(minibatch_index+1)))
+
 			# iteration number
 			iter = (epoch - 1) * n_train_batches + minibatch_index
 			
-			if minibatch_index % verbose_freq == 0:
-				print time.ctime() + ", " + str(minibatch_index) + "/" + str(n_train_batches) + ", " + str(minibatch_avg_cost_sum/(minibatch_index+1))
-
-			if (iter + 1) % validation_frequency == 0:
+			if (iter+1) % validation_frequency == 0 or minibatch_index == (n_train_batches-1):
+				denominator = dev_eval.get_denominator()
 				dev_error = dev_eval.classification_error()
 				dev_perplexity = dev_eval.perplexity()
 				if args.testset:
 					test_error = test_eval.classification_error()
 					test_perplexity = test_eval.perplexity()
-
+				
 				# if we got the best validation score until now
 				if dev_perplexity < best_dev_perplexity:
 					best_dev_perplexity = dev_perplexity
 					best_iter = iter
 					if args.testset:
 						best_test_perplexity = test_perplexity
-					
-					#improve patience if loss improvement is good enough
-					#if (dev_perplexity < best_dev_perplexity * improvement_threshold):
-					#	patience = max(patience, iter * patience_increase)
 
 				rem_time = int((args.num_epochs * n_train_batches - iter) * (time.time() - proc_time) / (validation_frequency * 60))
 				proc_time = time.time()
 				
-				print('epoch %i, minibatch %i/%i, dev error %f %%, perplexity %f (best: %f), %im' % (
-						epoch,
-						minibatch_index + 1,
-						n_train_batches,
-						dev_error * 100.,
-						dev_perplexity,
-						best_dev_perplexity,
-						rem_time
-					)
-				)
-				
+				U.info('DEV =>  Error=%.2f%%, PPL=%.2f (best=%.2f), Denom=%.3f, %im' % (dev_error * 100., dev_perplexity, best_dev_perplexity, denominator, rem_time))
 				if args.testset:
-					print('epoch %i, minibatch %i/%i, test error %f %%, perplexity %f (best: %f), %im' % (
-							epoch,
-							minibatch_index + 1,
-							n_train_batches,
-							test_error * 100.,
-							test_perplexity,
-							best_test_perplexity,
-							rem_time
-						)
-					)
-
-			if patience <= iter:
-				#done_looping = True
-				#break
-				pass
+					U.info('TEST => Error=%.2f%%, PPL=%.2f (best=%.2f)' % (test_error * 100., test_perplexity, best_test_perplexity))
+		
+		classifier.save_model(args.model_path + '.epoch' + str(epoch) + '.zip')
 
 	end_time = time.time()
+	
+	dev_perplexity = dev_eval.perplexity()
+	U.info('Final dev perplexity: ' + str(dev_perplexity))
 
-	print('Optimization complete')
-	print('Best dev perplexity: %f at iteration %i' % (best_dev_perplexity, best_iter + 1))
+	U.info('Optimization complete')
+	U.info('Best dev perplexity: %f at iteration %i' % (best_dev_perplexity, best_iter + 1))
 	if args.testset:
-		print(('Test perplexity at iteration %i: %f') % (best_iter + 1, best_test_perplexity))
-	print >> sys.stderr, 'Ran for %.2fm' % ((end_time - start_time) / 60.)
+		U.info(('Test perplexity at iteration %i: %f') % (best_iter + 1, best_test_perplexity))
+	U.info('Ran for %.2fm' % ((end_time - start_time) / 60.))

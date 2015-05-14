@@ -10,4 +10,5 @@ class NegLogLikelihood():
 			classifier.negative_log_likelihood(self.y)
 			+ args.L1_reg * classifier.L1
 			+ args.L2_reg * classifier.L2_sqr
-		)
+			+ args.alpha  * classifier.log_Z_sqr
+		)	

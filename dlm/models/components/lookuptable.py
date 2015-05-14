@@ -3,7 +3,7 @@ import theano
 import theano.tensor as T
 import numpy
 
-class LookupTableLayer(object):
+class LookupTable():
 	
 	def __init__(self, rng, input, vocab_size, emb_dim, embeddings=None):
 
