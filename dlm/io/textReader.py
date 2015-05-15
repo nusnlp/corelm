@@ -1,5 +1,6 @@
 import sys
 import dlm.utils as U
+import dlm.io.logging as L
 from dlm.io.vocabReader import VocabManager
 from dlm.io.nbestReader import NBestList
 import numpy as np
@@ -11,7 +12,7 @@ class TextReader():
 	
 	def __init__(self, dataset_path, is_nbest, ngram_size, vocab_path):
 		
-		U.info("Initializing dataset from: " + dataset_path)
+		L.info("Initializing dataset from: " + dataset_path)
 		
 		vocab = VocabManager(vocab_path)
 		

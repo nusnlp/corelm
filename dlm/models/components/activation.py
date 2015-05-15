@@ -1,5 +1,6 @@
 import theano.tensor as T
 import dlm.utils as U
+import dlm.io.logging as L
 
 class Activation():
 
@@ -12,12 +13,12 @@ class Activation():
 		if func_name == 'tanh':
 			return T.tanh
 		elif func_name == 'hardtanh':
-			U.warning('Current hardTanh implementation is slow!')
+			L.warning('Current hardTanh implementation is slow!')
 			return lambda x: ((abs(x) <= 1) * x) + ((1 < abs(x)) * T.sgn(x))
 		elif func_name == 'sigmoid':
 			return T.nnet.sigmoid
 		elif func_name == 'fastsigmoid':
-			U.error('T.nnet.ultra_fast_sigmoid function has some problems')
+			L.error('T.nnet.ultra_fast_sigmoid function has some problems')
 		elif func_name == 'hardsigmoid':
 			return T.nnet.hard_sigmoid
 		elif func_name == 'softplus':
@@ -28,4 +29,4 @@ class Activation():
 		elif func_name == 'cappedrelu':
 			return lambda x: T.minimum(x * (x > 0), 6)
 		else:
-			U.error('Invalid function name given: ' + func_name)
+			L.error('Invalid function name given: ' + func_name)

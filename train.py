@@ -2,6 +2,7 @@
 
 import argparse
 import dlm.utils as U
+import dlm.io.logging as L
 
 ###############
 ## Arguments
@@ -23,14 +24,17 @@ parser.add_argument("-e", "--num-epochs", dest="num_epochs", default=50, type=in
 parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=float, help="Self normalization coefficient (alpha)")
 parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=float, help="L1 regularization coefficient")
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient")
+parser.add_argument("-log", "--log-file", dest="log_file", default='primelm.train.log', help="The output log file")
 args = parser.parse_args()
+
+L.set_file_path(args.log_file)
 
 U.set_theano_device(args.device)
 
 import dlm.trainer
 from dlm.io.mmapReader import MemMapReader
 from dlm.criterions.likelihood import NegLogLikelihood
-from dlm.models.ltmlp2 import MLP
+from dlm.models.ltmlp import MLP
 
 #########################
 ## Loading datasets
@@ -46,7 +50,7 @@ if args.testset:
 ## Creating model
 #
 
-U.info('Building the model')
+L.info('Building the model')
 
 args.vocab_size = trainset.get_vocab_size()
 args.ngram_size = trainset.get_ngram_size()

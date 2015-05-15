@@ -1,9 +1,10 @@
 import codecs
 import dlm.utils as U
+import dlm.io.logging as L
 
 class VocabManager:
 	def __init__(self, input_path):
-		U.info("Initializing vocabulary from: " + input_path)
+		L.info("Initializing vocabulary from: " + input_path)
 		self.word_to_id_dict = dict()
 		self.id_to_word_dict = dict()
 		curr_id = 0
@@ -17,7 +18,7 @@ class VocabManager:
 			self.unk_id = self.word_to_id_dict['<unk>']
 			self.padding_id = self.word_to_id_dict['<s>']
 		except KeyError:
-			U.error("Given vocab file does not include <unk> or <s>")
+			L.error("Given vocab file does not include <unk> or <s>")
 		
 	def get_word_given_id(self, id):
 		try:

@@ -3,6 +3,7 @@ from dlm.models.components.linear import Linear
 from dlm.models.components.activation import Activation
 from dlm.models import classifier
 import dlm.utils as U
+import dlm.io.logging as L
 import theano.tensor as T
 import numpy
 
@@ -22,7 +23,7 @@ class MLP(classifier.Classifier):
 		emb_dim = args.emb_dim
 		num_hidden_list = map(int, args.num_hidden.split(','))
 		for i in range(len(num_hidden_list)):
-			U.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
+			L.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
 		vocab_size = args.vocab_size
 		ngram_size = args.ngram_size
 		num_classes = args.num_classes

@@ -1,5 +1,6 @@
 from __future__ import division
-import dlm.utils as U
+#import dlm.utils as U
+import dlm.io.logging as L
 import numpy as np
 import theano
 import theano.tensor as T
@@ -12,7 +13,7 @@ class MemMapReader():
 	
 	def __init__(self, dataset_path, batch_size=500):
 		
-		U.info("Initializing dataset from: " + dataset_path)
+		L.info("Initializing dataset from: " + dataset_path)
 		
 		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')

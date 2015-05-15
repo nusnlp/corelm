@@ -19,7 +19,10 @@ parser.add_argument("-ppl", "--perplexity", action='store_true', help="Compute p
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 
-U.set_theano_device(args.device)
+args.logger = Logger('primelm.test.log')
+L = args.logger
+
+U.set_theano_device(args)
 
 from dlm.models.ltmlp import MLP
 from dlm import eval
@@ -64,14 +67,14 @@ evaluator = eval.Evaluator(testset, classifier)
 start_time = time.time()
 
 if args.perplexity:
-	U.info("Perplexity: %f" % (evaluator.perplexity()))
+	L.info("Perplexity: %f" % (evaluator.perplexity()))
 
 if args.lp_path:
 	with open(args.lp_path, 'w') as output:
 		for i in xrange(testset.get_num_sentences()):
 			output.write(str(evaluator.sequence_log_prob(i)) + '\n')
 
-U.info("Ran for %.2fs" % (time.time() - start_time))
+L.info("Ran for %.2fs" % (time.time() - start_time))
 
 
 

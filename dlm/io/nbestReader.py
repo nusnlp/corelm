@@ -1,5 +1,6 @@
 import sys
 import dlm.utils as U
+import dlm.io.logging as L
 import codecs
 
 class NBestList():
@@ -30,7 +31,7 @@ class NBestList():
 		try:
 			index = int(segments[0])
 		except ValueError:
-			U.error("The first segment in an n-best list must be an integer")
+			L.error("The first segment in an n-best list must be an integer")
 		hyp = segments[1].strip()
 		features = segments[2].strip()
 		score = segments[3].strip()

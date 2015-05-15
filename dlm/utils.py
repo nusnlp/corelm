@@ -35,6 +35,8 @@ def capture_output(command):
 	
 #-----------------------------------------------------------------------------------------------------------#
 	
+import re
+
 class BColors:
 	HEADER = '\033[95m'
 	OKBLUE = '\033[94m'
@@ -66,35 +68,10 @@ class BColors:
 	BRED = BOLD + '\033[31m'
 	BMAGENTA = BOLD + '\033[35m'
 	BBLACK = BOLD + '\033[30m'
-	OFF = BOLD + '\033[0,0m'
-
-def pprint(message, print_target="stdout"):
-	assert_value(print_target, ["stdout", "stderr"])
-	if print_target == "stderr":
-		sys.stderr.write(message)
-	else:
-		sys.stdout.write(message)
 	
-def pprintln(message, print_target):
-	pprint(message + "\n", print_target)
-
-def error(message):
-	sys.stderr.write(BColors.BFAIL + "[ERROR] " + BColors.ENDC + message + "\n")
-	sys.exit()
-
-def warning(message):
-	sys.stderr.write(BColors.BWARNING + "[WARNING] " + BColors.ENDC + message + "\n")
-	
-def info(message):
-	sys.stderr.write(BColors.BOKBLUE + "[INFO] " + BColors.ENDC + message + "\n")
-	
-def usage(message):
-	sys.stderr.write(BColors.BOLD + "[USAGE] " + BColors.ENDC + message + "\n")
-	sys.exit()
-
-def exception():
-	sys.stderr.write(BColors.BFAIL + "[ERROR] " + BColors.ENDC + str(sys.exc_info()[0].mro()[0].__name__) + ": " + sys.exc_info()[1].message + "\n")
-	sys.exit()
+	@staticmethod
+	def cleared(s):
+		return re.sub("\033\[[0-9][0-9]?m", "", s)
 	
 #-----------------------------------------------------------------------------------------------------------#
 	
@@ -146,6 +123,7 @@ def get_all_windows(input_list, window_size):
 
 def set_theano_device(device):
 	import sys
+	import dlm.io.logging as L
 	xassert(device == "cpu" or device == "gpu", "The device can only be 'cpu' or 'gpu'")
 	xassert(sys.modules.has_key('theano') == False, "dlm.utils.set_theano_device() function cannot be called after importing theano")
 	os.environ['THEANO_FLAGS'] = 'device=' + device
@@ -158,14 +136,15 @@ def set_theano_device(device):
 		import theano
 	except EnvironmentError:
 		exception()
+	global logger
 	if theano.config.device == "gpu":
-		info(
+		L.info(
 			"Device: " + theano.config.device.upper() + " "
 			+ str(theano.sandbox.cuda.active_device_number())
 			+ " (" + str(theano.sandbox.cuda.active_device_name()) + ")"
 		)
 	else:
-		info("Device: " + theano.config.device.upper())
+		L.info("Device: " + theano.config.device.upper())
 
 
 
