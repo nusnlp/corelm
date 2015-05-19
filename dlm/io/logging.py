@@ -1,7 +1,7 @@
 import sys
 import dlm.utils as U
 
-file_path = "<INIT>"
+file_path = None
 
 def set_file_path(path):
 	global file_path
@@ -36,6 +36,7 @@ def exception():
 def _write(stderr, log):
 	sys.stderr.write(stderr)
 	global file_path
-	log_file = open(file_path, 'a')
-	log_file.write(log)
-	log_file.close()
+	if file_path:
+		log_file = open(file_path, 'a')
+		log_file.write(log)
+		log_file.close()
