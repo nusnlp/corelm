@@ -77,7 +77,8 @@ class BColors:
 	
 def xassert(condition, message):
 	if not condition:
-		error(message)
+		import dlm.io.logging as L
+		L.error(message)
 
 def assert_value(value, valid_values):
 	assert type(valid_values) == list, "valid_values must be a list, given: " + str(type(valid_values))
@@ -146,6 +147,22 @@ def set_theano_device(device):
 	else:
 		L.info("Device: " + theano.config.device.upper())
 
+#-----------------------------------------------------------------------------------------------------------#
+
+def print_args(args):
+	import dlm.io.logging as L
+	L.info("Arguments:")
+	items = vars(args)
+	for key in sorted(items.keys(), key=lambda s: s.lower()):
+		value = items[key]
+		if not value:
+			value = "None"
+		L.info("  " + key + ": " + BColors.MAGENTA + str(items[key]) + BColors.ENDC)
+
+def curr_time():
+	import time
+	t = time.localtime()
+	return '%i-%i-%i-%ih-%im-%is' % (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
 
 
 
