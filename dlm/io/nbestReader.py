@@ -83,6 +83,9 @@ class NBestItem:
 	
 	def __unicode__(self):
 		return ' ||| '.join([unicode(self.index), self.hyp, self.features, self.score, self.phrase_alignments, self.word_alignments])
+	
+	def append_feature(self, feature):
+		self.features += ' ' + str(feature)
 
 
 class NBestGroup:
@@ -113,15 +116,22 @@ class NBestGroup:
 		self.group.append(item)
 		
 	def next(self):
-		if self.item_index < len(self.group):
+		#if self.item_index < len(self.group):
+		try:
 			item = self.group[self.item_index]
 			self.item_index += 1
 			return item
-		else:
+		#else:
+		except IndexError:
 			raise StopIteration
 	
 	def size(self):
 		return len(self.group)
+	
+	def append_features(self, features_list):
+		U.xassert(len(features_list) == len(self.group), 'Number of features and number of items in this group do not match')
+		for i in range(len(self.group)):
+			self.group[i].append_feature(features_list[i])
 
 
 
