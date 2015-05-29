@@ -4,6 +4,7 @@ import sys
 import time
 import argparse
 import dlm.utils as U
+import dlm.io.logging as L
 
 ###############
 ## Arguments
@@ -19,10 +20,7 @@ parser.add_argument("-ppl", "--perplexity", action='store_true', help="Compute p
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 
-args.logger = Logger('primelm.test.log')
-L = args.logger
-
-U.set_theano_device(args)
+U.set_theano_device(args.device)
 
 from dlm.models.ltmlp import MLP
 from dlm import eval
@@ -72,7 +70,7 @@ if args.perplexity:
 if args.lp_path:
 	with open(args.lp_path, 'w') as output:
 		for i in xrange(testset.get_num_sentences()):
-			output.write(str(evaluator.sequence_log_prob(i)) + '\n')
+			output.write(str(evaluator.get_sequence_log_prob(i)) + '\n')
 
 L.info("Ran for %.2fs" % (time.time() - start_time))
 

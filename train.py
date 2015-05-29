@@ -12,7 +12,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-tr", "--train-mmap", dest="trainset", required=True, help="The memory-mapped training file")
 parser.add_argument("-tu", "--tune-mmap", dest="devset", required=True, help="The memory-mapped development (tune) file")
 parser.add_argument("-ts", "--test-mmap", dest="testset", help="The memory-mapped evaluation (test) file")
-parser.add_argument("-M", "--model", dest="model_path", required=True, help="The output model file")
 parser.add_argument("-D", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-E", "--emb-dim", dest="emb_dim", default=50, type=int, help="Word embeddings dimension")
 parser.add_argument("-H", "--hidden-units", dest="num_hidden", default="512,0", help="A comma seperated list for the number of units in each hidden layer")
@@ -20,15 +19,23 @@ parser.add_argument("-A", "--activation", dest="activation_name", default="tanh"
 parser.add_argument("-a", "--training-algorithm", dest="algorithm", default="sgd", help="The training algorithm (only sgd is supported for now)")
 parser.add_argument("-b", "--batch-size", dest="batchsize", default=128, type=int, help="Minibatch size for training")
 parser.add_argument("-l", "--learning-rate", dest="learning_rate", default=0.01, type=float, help="Learning rate")
+parser.add_argument("-d", "--learning-rate-decay", dest="learning_rate_decay", default=0, type=float, help="Learning rate decay (e.g. 0.995) (TO DO)")
+parser.add_argument("-m", "--momentum", dest="momentum", default=0, type=float, help="Momentum (TO DO)")
 parser.add_argument("-e", "--num-epochs", dest="num_epochs", default=50, type=int, help="Number of iterations (epochs)")
 parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=float, help="Self normalization coefficient (alpha)")
 parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=float, help="L1 regularization coefficient")
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient")
-parser.add_argument("-log", "--log-file", dest="log_file", default='primelm.train.log', help="The output log file")
+parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
+parser.add_argument("--threads", dest="threads", default=12, help="Number of threads when device is CPU (TO DO)")
 args = parser.parse_args()
 
-L.set_file_path(args.log_file)
+if args.out_dir is None:
+	args.out_dir = 'primelm-' + U.curr_time()
+U.mkdir_p(args.out_dir)
 
+L.set_file_path(args.out_dir + "/log.txt")
+
+U.print_args(args)
 U.set_theano_device(args.device)
 
 import dlm.trainer
