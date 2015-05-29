@@ -30,7 +30,7 @@ if (not os.path.exists(args.output_dir_path)):
 	os.makedirs(args.output_dir_path)
 print("Output directory: " + os.path.abspath(args.output_dir_path))
 
-prefix = args.output_dir_path+"/"+os.path.basename(args.input_path)
+prefix = args.output_dir_path + "/" + os.path.basename(args.input_path)
 
 if args.shuffle:
 	output_path = prefix + ".idx.shuf.mmap"
@@ -91,6 +91,8 @@ else:
 		U.xassert(word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>'), "Missing <s> or <unk> in given vocab file")
 		if args.endp:
 			U.xassert(word_to_id_dict.has_key('</s>'), "Missing </s> in given vocab file while --endp flag is used")
+		if word_to_id_dict.has_key('</s>'):
+			U.xassert(args.endp, "Given vocab file has </s> but --endp flag is not activated")
 
 _, tmp_path = tempfile.mkstemp(prefix='dlm.tmp.')
 

@@ -19,6 +19,7 @@ class VocabManager:
 			self.padding_id = self.word_to_id_dict['<s>']
 		except KeyError:
 			L.error("Given vocab file does not include <unk> or <s>")
+		self.has_end_padding = self.word_to_id_dict.has_key('</s>')
 		
 	def get_word_given_id(self, id):
 		try:

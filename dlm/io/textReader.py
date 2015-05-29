@@ -19,6 +19,8 @@ class TextReader():
 		def get_ngrams(tokens):
 			for i in range(ngram_size - 1):
 				tokens.insert(0, '<s>')
+			if vocab.has_end_padding:
+				tokens.append('</s>')
 			indices = vocab.get_ids_given_word_list(tokens)
 			return U.get_all_windows(indices, ngram_size)
 		
@@ -34,15 +36,17 @@ class TextReader():
 				for item in group:
 					tokens = item.hyp.split()
 					starts_list.append(curr_start_index)
-					curr_start_index += len(tokens)
-					ngrams_list += get_ngrams(tokens)
+					ngrams = get_ngrams(tokens)
+					ngrams_list += ngrams
+					curr_start_index += len(ngrams)
 		else:
 			dataset = codecs.open(dataset_path, 'r', encoding="UTF-8")
 			for line in dataset:
 				tokens = line.split()
 				starts_list.append(curr_start_index)
-				curr_start_index += len(tokens)
-				ngrams_list += get_ngrams(tokens)
+				ngrams = get_ngrams(tokens)
+				ngrams_list += ngrams
+				curr_start_index += len(ngrams)
 			dataset.close()
 		
 		self.num_sentences = len(starts_list)
