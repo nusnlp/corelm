@@ -23,9 +23,10 @@ class MLP(classifier.Classifier):
 		emb_dim = args.emb_dim
 		num_hidden_list = map(int, args.num_hidden.split(','))
 		for i in range(len(num_hidden_list)):
-			L.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
+			#L.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
+			L.info("Hidden Layer " + str(i+1) + ": " + U.BColors.RED + str(num_hidden_list[i]) + U.BColors.ENDC)
 		vocab_size = args.vocab_size
-		ngram_size = args.ngram_size
+		self.ngram_size = args.ngram_size
 		num_classes = args.num_classes
 		activation_name = args.activation_name
 		self.args = args
@@ -47,7 +48,7 @@ class MLP(classifier.Classifier):
 			emb_dim=emb_dim
 		)
 		last_layer_output = lookupTableLayer.output
-		last_layer_output_size = (ngram_size - 1) * emb_dim
+		last_layer_output_size = (self.ngram_size - 1) * emb_dim
 		self.params += lookupTableLayer.params
 		
 		######################################################################
@@ -97,6 +98,8 @@ class MLP(classifier.Classifier):
 		self.p_y_given_x_matrix = T.nnet.softmax(last_layer_output)
 		
 		self.log_Z_sqr = T.log(T.mean(T.sum(T.exp(last_layer_output), axis=1))) ** 2
+		#self.log_Z_sqr = T.sum(T.log(T.sum(T.exp(last_layer_output), axis=1))) ** 2
+		#self.log_Z_sqr = T.mean(T.log(T.sum(T.exp(last_layer_output), axis=1))) ** 2
 		
 		######################################################################
 		## Model Predictions
