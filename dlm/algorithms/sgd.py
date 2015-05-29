@@ -3,10 +3,14 @@ import theano
 
 class SGD:
 	def __init__(self, classifier, criterion, learning_rate, trainset):
+		self.eta = learning_rate
+		
 		gparams = [T.grad(criterion.cost, param) for param in classifier.params]
 
+		lr = T.fscalar()
+		
 		updates = [
-			(param, param - learning_rate * gparam)
+			(param, param - lr * gparam)
 			for param, gparam in zip(classifier.params, gparams)
 		]
 	
@@ -15,7 +19,7 @@ class SGD:
 		y = criterion.y
 		
 		self.step_func = theano.function(
-			inputs=[index],
+			inputs=[index, lr],
 			outputs=criterion.cost,
 			updates=updates,
 			givens={
@@ -25,4 +29,10 @@ class SGD:
 		)
 
 	def step(self, minibatch_index):
-		return self.step_func(minibatch_index)
+		return self.step_func(minibatch_index, self.eta)
+	
+	def set_learning_rate(self, eta):
+		self.eta = eta
+	
+	def get_learning_rate(self):
+		return self.eta
