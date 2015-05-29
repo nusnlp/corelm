@@ -1,3 +1,4 @@
+import sys
 from theano.misc.pkl_utils import pickle
 
 class Classifier:
@@ -10,7 +11,7 @@ class Classifier:
 
 	def set_params(self, params):
 		for param, loaded_param in zip(self.params, params):
-			param.set_value(loaded_param.get_value())
+			param.set_value(loaded_param)
 
 	def load_model(self, model_path):
 		with open(model_path, 'r') as model_file:
@@ -20,5 +21,5 @@ class Classifier:
 	def save_model(self, model_path):
 		with open(model_path, 'w') as model_file:
 			params = self.get_params()
-			pickle.dump((self.args, params), model_file)
+			pickle.dump((self.args, [param.get_value() for param in params]), model_file)
 
