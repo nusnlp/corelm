@@ -12,14 +12,13 @@ class LookupTable():
 		if embeddings is None:
 			emb_matrix = numpy.asarray(
 				rng.uniform(
-					low=-1,
-					high=1,
+					low=-0.01, #low=-1,
+					high=0.01, #high=1,
 					size=(vocab_size, emb_dim)
 				),
 				dtype=theano.config.floatX
 			)
-
-		embeddings = theano.shared(value=emb_matrix, name='embeddings', borrow=True) # Check if borrowing makes any problems
+			embeddings = theano.shared(value=emb_matrix, name='embeddings', borrow=True) # Check if borrowing makes any problems
 		
 		self.embeddings = embeddings
 

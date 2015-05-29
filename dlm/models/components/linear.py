@@ -11,8 +11,8 @@ class Linear():
 		if W is None:
 			W_values = numpy.asarray(
 				rng.uniform(
-					low=-numpy.sqrt(6. / (n_in + n_out)),
-					high=numpy.sqrt(6. / (n_in + n_out)),
+					low = -0.01, #low=-numpy.sqrt(6. / (n_in + n_out)),
+					high = 0.01, #high=numpy.sqrt(6. / (n_in + n_out)),
 					size=(n_in, n_out)
 				),
 				dtype=theano.config.floatX
