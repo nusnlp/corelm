@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import numpy as np
-import theano
 import sys, os
 import tempfile
 import shutil
@@ -15,10 +14,11 @@ parser.add_argument("-n", "--ngram-size", dest="ngram_size", required=True, type
 parser.add_argument("-o", "--output-dir", dest="output_dir_path", required=True, help="Path to output directory.")
 parser.add_argument("--text", dest="text_output", action='store_true', help="Add this flag to produce text output.")
 parser.add_argument("--shuffle", dest="shuffle", action='store_true', help="Add this flag to shuffle the output.")
+parser.add_argument("--endp", dest="endp", action='store_true', help="Add this flag to add sentence end padding </s>.")
 
 # Mutually exculsive group of pruning arguments
 prune_args = parser.add_mutually_exclusive_group(required=True)
-prune_args.add_argument("--prune-vocab-size", dest="prune_vocab_size", type=int, help="Vocabulary size. (Default: 10000)")
+prune_args.add_argument("--prune-vocab-size", dest="prune_vocab_size", type=int, help="Vocabulary size")
 prune_args.add_argument("--prune-threshold",  dest="prune_threshold_count", type=int, help="Minimum number of occurances for a word to be added into vocabulary")
 prune_args.add_argument("--input-vocab-file", dest="input_vocab_path", help="Path to an existing vocabulary file")
 
@@ -30,7 +30,7 @@ if (not os.path.exists(args.output_dir_path)):
 	os.makedirs(args.output_dir_path)
 print("Output directory: " + os.path.abspath(args.output_dir_path))
 
-prefix = args.output_dir_path+"/"+os.path.basename(args.input_path)
+prefix = args.output_dir_path + "/" + os.path.basename(args.input_path)
 
 if args.shuffle:
 	output_path = prefix + ".idx.shuf.mmap"
@@ -66,9 +66,13 @@ if args.input_vocab_path is None:
 	vocab_path = prefix + ".vocab"
 	word_to_id_dict['<unk>'] = 0
 	word_to_id_dict['<s>'] = 1
-	with  open(vocab_path,'w') as f_vocab:
-		curr_index = 2
-		f_vocab.write('<unk>\n<s>\n')
+	added_tokens = '<unk>\n<s>\n'
+	if args.endp:
+		word_to_id_dict['</s>'] = 2
+		added_tokens += '</s>\n'
+	with open(vocab_path, 'w') as f_vocab:
+		curr_index = len(word_to_id_dict)
+		f_vocab.write(added_tokens)
 		tokens_freq_sorted = sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True)
 		if args.prune_vocab_size is not None and args.prune_vocab_size < len(tokens_freq_sorted):
 			tokens_freq_sorted = tokens_freq_sorted[0:args.prune_vocab_size]
@@ -85,6 +89,10 @@ else:
 				word_to_id_dict[token] = curr_index
 			curr_index = curr_index + 1
 		U.xassert(word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>'), "Missing <s> or <unk> in given vocab file")
+		if args.endp:
+			U.xassert(word_to_id_dict.has_key('</s>'), "Missing </s> in given vocab file while --endp flag is used")
+		if word_to_id_dict.has_key('</s>'):
+			U.xassert(args.endp, "Given vocab file has </s> but --endp flag is not activated")
 
 _, tmp_path = tempfile.mkstemp(prefix='dlm.tmp.')
 
@@ -102,6 +110,8 @@ with open(args.input_path, 'r') as input_file, open(tmp_path, 'w') as tmp_file:
 		tokens = line.split()
 		for i in range(args.ngram_size - 1):
 			tokens.insert(0, '<s>')
+		if args.endp:
+			tokens.append('</s>')
 		indices = []
 		for token in tokens:
 			if not word_to_id_dict.has_key(token):

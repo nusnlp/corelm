@@ -1,19 +1,19 @@
 from __future__ import division
-import dlm.utils as U
-import reader
+#import dlm.utils as U
+import dlm.io.logging as L
 import numpy as np
 import theano
 import theano.tensor as T
 import math as M
 import sys
 
-class LMDatasetReader(reader.Reader):
+class MemMapReader():
 	
 	#### Constructor
 	
-	def __init__(self, dataset_path, batch_size=10):
+	def __init__(self, dataset_path, batch_size=500):
 		
-		print "Initializing dataset from: " + dataset_path
+		L.info("Initializing dataset from: " + dataset_path)
 		
 		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')
@@ -22,8 +22,8 @@ class LMDatasetReader(reader.Reader):
 		self.num_word_types = fp[2]
 
 		# Setting minibatch size and number of mini batches
-		self.batch_size = batch_size	
-		self.num_batches = int(M.ceil(self.num_samples / batch_size))
+		self.batch_size = batch_size
+		self.num_batches = int(M.ceil(self.num_samples / self.batch_size))
 		
 		# Reading the matrix of samples
 		fp = fp.reshape((self.num_samples + 1, self.ngram))
@@ -41,6 +41,9 @@ class LMDatasetReader(reader.Reader):
 		return self.shared_y[index * self.batch_size : (index+1) * self.batch_size]
 	
 	#### INFO
+	
+	def _get_num_samples(self):
+		return self.num_samples
 	
 	def get_num_batches(self):
 		return self.num_batches
