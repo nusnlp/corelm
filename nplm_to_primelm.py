@@ -3,15 +3,25 @@
 import numpy as np
 import argparse
 import os
-from dlm.models.ltmlp import MLP
 import dlm.utils as U
 import dlm.io.logging as L
+
+
+def convert_type(param):
+	return np.float32(param)
+
+
 
 # Arguments for this script
 parser = argparse.ArgumentParser()
 parser.add_argument("-m", "--nplm-model", dest="nplm_model", required=True, help="The input NPLM model file")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
+
 args = parser.parse_args()
+
+U.set_theano_device('cpu')
+from dlm.models.ltmlp import MLP
+
 
 if args.out_dir is None:
 	args.out_dir = 'nplm_convert-' + U.curr_time()
@@ -76,6 +86,9 @@ W3 = np.loadtxt(model_dict['\output_weights'])
 W3 = np.transpose(W3)
 b3 = np.loadtxt(model_dict['\output_biases'])
 params_nn =[embeddings, W1, b1, W2, b2, W3, b3]
+
+#Type Conversion
+params_nn = [convert_type(param) for param in params_nn]
 
 # Setting the classifier parameters
 classifier.set_params(params_nn)
