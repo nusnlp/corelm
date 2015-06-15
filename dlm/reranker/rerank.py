@@ -3,6 +3,7 @@
 import sys
 import os
 import imp
+import shutil
 try:
 	import dlm
 except ImportError:
@@ -11,18 +12,23 @@ except ImportError:
 
 import dlm.utils as U
 import dlm.io.logging as L
-from dlm.io.nbestReader import NBestList
 import argparse
-import codecs
-import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input-nbest", dest="input_nbest", required=True, help="Input n-best file")
 parser.add_argument("-v", "--vocab-file", dest="vocab_path", required=True, help="The vocabulary file that was used in training")
 parser.add_argument("-m", "--model-file", dest="model_path", required=True, help="Input PrimeLM model file")
 parser.add_argument("-w", "--weights", dest="weights", required=True, help="Input weights file")
+parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-o", "--output-dir", dest="out_dir", required=True, help="Output directory")
+parser.add_argument("-n", "--no-aug", dest="no_aug", action='store_true', help="Augmentation will be skipped, if this flag is set")
 args = parser.parse_args()
+
+U.set_theano_device(args.device)
+
+from dlm.io.nbestReader import NBestList
+import codecs
+import numpy as np
 
 U.mkdir_p(args.out_dir)
 
@@ -30,7 +36,10 @@ from dlm.reranker import augmenter
 
 output_nbest_path = args.out_dir + '/augmented.nbest'
 
-augmenter.augment(args.model_path, args.input_nbest, args.vocab_path, output_nbest_path)
+if args.no_aug:
+	shutil.copy(args.input_nbest, output_nbest_path)
+else:
+	augmenter.augment(args.model_path, args.input_nbest, args.vocab_path, output_nbest_path)
 
 with open(args.weights, 'r') as input_weights:
 	lines = input_weights.readlines()
