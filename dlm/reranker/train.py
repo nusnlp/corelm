@@ -23,6 +23,7 @@ parser.add_argument("-c", "--config", dest="input_config", required=True, help="
 parser.add_argument("-o", "--output-dir", dest="out_dir", required=True, help="Output directory")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-t", "--threads", dest="threads", default = 14, type=int, help="Number of MERT threads")
+parser.add_argument("-n", "--no-aug", dest="no_aug", action='store_true', help="Augmentation will be skipped, if this flag is set")
 args = parser.parse_args()
 
 U.set_theano_device(args.device)
@@ -38,7 +39,10 @@ U.mkdir_p(args.out_dir)
 
 output_nbest_path = args.out_dir + '/augmented.nbest'
 
-augmenter.augment(args.model_path, args.input_nbest, args.vocab_path, output_nbest_path)
+if args.no_aug:
+	shutil.copy(args.input_nbest, output_nbest_path)
+else:
+	augmenter.augment(args.model_path, args.input_nbest, args.vocab_path, output_nbest_path)
 
 L.info('Extracting stats and features')
 #L.warning('The optional arguments of extractor are not used yet')
@@ -57,6 +61,8 @@ with open(args.out_dir + '/init.opt', 'w') as init_opt:
 			init_list += tokens[1:]
 		except ValueError:
 			pass
+	if not args.no_aug:
+		init_list.append('0.05')
 	dim = len(init_list)
 	init_opt.write(' '.join(init_list) + '\n')
 	init_opt.write(' '.join(['0' for i in range(dim)]) + '\n')

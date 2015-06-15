@@ -8,8 +8,6 @@ from dlm.io.vocabReader import VocabManager
 import numpy as np
 
 def augment(model_path, input_nbest_path, vocab_path, output_nbest_path):
-	L.info('Augmenting the given n-best list')
-
 	classifier = MLP(model_path=model_path)
 	evaluator = eval.Evaluator(None, classifier)
 
@@ -28,6 +26,8 @@ def augment(model_path, input_nbest_path, vocab_path, output_nbest_path):
 	input_nbest = NBestList(input_nbest_path, mode='r')
 	output_nbest = NBestList(output_nbest_path, mode='w')
 
+	L.info('Augmenting: ' + input_nbest_path)
+	
 	start_time = time.time()
 
 	counter = 0
@@ -41,10 +41,11 @@ def augment(model_path, input_nbest_path, vocab_path, output_nbest_path):
 				if not cache.has_key(str(ngram)):
 					ngram_list.append(ngram)
 					cache[str(ngram)] = 1000
-		ngram_array = np.asarray(ngram_list, dtype='int32')
-		ngram_log_prob_list = evaluator.get_ngram_log_prob(ngram_array[:,0:-1], ngram_array[:,-1])
-		for i in range(len(ngram_list)):
-			cache[str(ngram_list[i])] = ngram_log_prob_list[i]
+		if len(ngram_list) > 0:
+			ngram_array = np.asarray(ngram_list, dtype='int32')
+			ngram_log_prob_list = evaluator.get_ngram_log_prob(ngram_array[:,0:-1], ngram_array[:,-1])
+			for i in range(len(ngram_list)):
+				cache[str(ngram_list[i])] = ngram_log_prob_list[i]
 		for item in group:
 			tokens = item.hyp.split()
 			ngrams = get_ngrams(tokens)
