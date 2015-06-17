@@ -14,7 +14,7 @@ parser.add_argument("-tu", "--tune-mmap", dest="devset", required=True, help="Th
 parser.add_argument("-ts", "--test-mmap", dest="testset", help="The memory-mapped evaluation (test) file")
 parser.add_argument("-D", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-E", "--emb-dim", dest="emb_dim", default=50, type=int, help="Word embeddings dimension")
-parser.add_argument("-H", "--hidden-units", dest="num_hidden", default="512,0", help="A comma seperated list for the number of units in each hidden layer")
+parser.add_argument("-H", "--hidden-units", dest="num_hidden", default="512", help="A comma seperated list for the number of units in each hidden layer")
 parser.add_argument("-A", "--activation", dest="activation_name", default="tanh", help="Activation function (tanh|hardtanh|sigmoid|fastsigmoid|hardsigmoid|softplus|relu|cappedrelu)")
 parser.add_argument("-a", "--training-algorithm", dest="algorithm", default="sgd", help="The training algorithm (only sgd is supported for now)")
 parser.add_argument("-b", "--batch-size", dest="batchsize", default=128, type=int, help="Minibatch size for training")

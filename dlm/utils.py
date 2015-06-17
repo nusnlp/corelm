@@ -136,7 +136,7 @@ def set_theano_device(device):
 	try:
 		import theano
 	except EnvironmentError:
-		exception()
+		L.exception()
 	global logger
 	if theano.config.device == "gpu":
 		L.info(
