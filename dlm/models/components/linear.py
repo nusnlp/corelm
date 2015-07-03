@@ -21,14 +21,6 @@ class Linear():
 
 		if b_values is None:
 			b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
-		#	b_values = numpy.asarray(
-		#		rng.uniform(
-		#			low = -0.01, #low=-numpy.sqrt(6. / (n_in + n_out)),
-		#			high = 0.01, #high=numpy.sqrt(6. / (n_in + n_out)),
-		#			size=(n_out,)
-		#		),
-		#		dtype=theano.config.floatX
-			)
 		b = theano.shared(value=b_values, name='b', borrow=True)
 
 		self.W = W
