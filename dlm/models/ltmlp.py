@@ -6,6 +6,7 @@ import dlm.utils as U
 import dlm.io.logging as L
 import theano.tensor as T
 import numpy
+import math
 
 class MLP(classifier.Classifier):
 
@@ -83,7 +84,8 @@ class MLP(classifier.Classifier):
 			rng=rng,
 			input=last_layer_output,
 			n_in=last_layer_output_size,
-			n_out=num_classes
+			n_out=num_classes,
+			b_values = numpy.zeros(num_classes) - math.log(num_classes) 
 		)
 		last_layer_output = linearLayer.output
 		self.params += linearLayer.params
@@ -95,6 +97,7 @@ class MLP(classifier.Classifier):
 		## Model Output
 		#
 		
+		self.output = last_layer_output
 		self.p_y_given_x_matrix = T.nnet.softmax(last_layer_output)
 		
 		self.log_Z_sqr = T.log(T.mean(T.sum(T.exp(last_layer_output), axis=1))) ** 2
@@ -123,7 +126,9 @@ class MLP(classifier.Classifier):
 	
 	def negative_log_likelihood(self, y):
 		return -T.mean(T.log(self.p_y_given_x(y)))
+
 		
+
 	def errors(self, y):
 		if y.ndim != self.y_pred.ndim:
 			raise TypeError('y should have the same shape as self.y_pred', ('y', y.type, 'y_pred', self.y_pred.type))

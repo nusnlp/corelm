@@ -6,7 +6,6 @@ class SGD:
 		self.eta = learning_rate
 		
 		gparams = [T.grad(criterion.cost, param) for param in classifier.params]
-
 		lr = T.fscalar()
 		
 		updates = [
@@ -27,10 +26,26 @@ class SGD:
 				y: trainset.get_y(index)
 			}
 		)
+		
+		# Debugging function to test the criterion
+		self.test = theano.function(
+			inputs=[index, lr],
+			outputs=criterion.test,
+			updates=updates,
+			givens={
+				x: trainset.get_x(index),
+				y: trainset.get_y(index)
+			}
+		)
 
+
+
+		
 	def step(self, minibatch_index):
-		return self.step_func(minibatch_index, self.eta)
+		step_cost = self.step_func(minibatch_index, self.eta)
+		return step_cost
 	
+
 	def set_learning_rate(self, eta):
 		self.eta = eta
 	
