@@ -11,4 +11,8 @@ class NegLogLikelihood():
 			+ args.L1_reg * classifier.L1
 			+ args.L2_reg * classifier.L2_sqr
 			+ args.alpha  * classifier.log_Z_sqr
-		)	
+		)
+
+		self.test = (
+			T.mean(classifier.p_y_given_x(self.y))
+		)
