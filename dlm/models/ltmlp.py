@@ -100,9 +100,10 @@ class MLP(classifier.Classifier):
 		self.output = last_layer_output
 		self.p_y_given_x_matrix = T.nnet.softmax(last_layer_output)
 		
-		self.log_Z_sqr = T.log(T.mean(T.sum(T.exp(last_layer_output), axis=1))) ** 2
+		#self.log_Z_sqr = T.log(T.mean(T.sum(T.exp(last_layer_output), axis=1))) ** 2
 		#self.log_Z_sqr = T.sum(T.log(T.sum(T.exp(last_layer_output), axis=1))) ** 2
 		#self.log_Z_sqr = T.mean(T.log(T.sum(T.exp(last_layer_output), axis=1))) ** 2
+		self.log_Z_sqr = T.mean(T.log(T.sum(T.exp(last_layer_output), axis=1)) ** 2)
 		
 		######################################################################
 		## Model Predictions
