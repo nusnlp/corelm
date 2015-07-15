@@ -61,5 +61,7 @@ class MemMapReader():
 		unigram_counts = np.bincount(self.shared_y.get_value())
 		unigram_counts = np.append(unigram_counts, np.zeros(self.num_word_types - unigram_counts.size, dtype='int32'))
 		sum_unigram_counts = np.sum(unigram_counts)
+
 		unigram_model = unigram_counts / sum_unigram_counts
+		unigram_model = unigram_model.astype(theano.config.floatX)
 		return theano.shared(unigram_model,borrow=True)
