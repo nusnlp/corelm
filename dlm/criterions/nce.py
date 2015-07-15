@@ -18,8 +18,8 @@ class NCELikelihood():
 		noise_samples = srng.choice(size=(self.y.shape[0],args.num_noise_samples),  a=args.num_classes, p=noise_dist, dtype='int32')
 
 		log_noise_dist = theano.shared(np.log(noise_dist.get_value()),borrow=True)
-		log_num_noise_samples = math.log(args.num_noise_samples)
-
+		#log_num_noise_samples = theano.shared(math.log(args.num_noise_samples)).astype(theano.config.floatX)
+		log_num_noise_samples = theano.shared(np.log(args.num_noise_samples,dtype=theano.config.floatX))
 		# Data Part of Cost Function: log ( u(w|c) / (u(w|c) + k * p_n(w))
 		data_scores = classifier.output[T.arange(self.y.shape[0]),self.y]
 		data_denom = self.logadd(data_scores, log_num_noise_samples + log_noise_dist[self.y] )
