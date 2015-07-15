@@ -21,6 +21,7 @@ parser.add_argument("-i", "--input-file", dest="input_path", required=True, help
 parser.add_argument("-r", "--reference-files", dest="ref_paths", required=True, help="A comma-seperated list of reference files")
 parser.add_argument("-o", "--output-nbest-file", dest="out_nbest_path", help="Output oracle n-best file")
 parser.add_argument("-b", "--output-1best-file", dest="out_1best_path", required=True, help="Output oracle 1-best file")
+parser.add_argument("-s", "--output-scores", dest="out_scores_path", help="Output oracle scores file")
 parser.add_argument("-m", "--smoothing-method", dest="method", required=True, help="Smoothing method (none|epsilon|lin|nist|chen)")
 parser.add_argument("-t", "--threads", dest="threads", type=int, default=14, help="Number of threads")
 args = parser.parse_args()
@@ -38,6 +39,8 @@ ref_path_list = args.ref_paths.split(',')
 input_nbest = NBestList(args.input_path, mode='r', reference_list=ref_path_list)
 if args.out_nbest_path:
 	output_nbest = NBestList(args.out_nbest_path, mode='w')
+if args.out_scores_path:
+	output_scores = open(args.out_scores_path, mode='w')
 output_1best = codecs.open(args.out_1best_path, mode='w', encoding='UTF-8')
 
 U.xassert(methods.has_key(args.method), "Invalid smoothing method: " + args.method)
@@ -51,8 +54,7 @@ def process_group(group):
 	for item in group:
 		scores[index] = scorer(item.hyp, group.refs)
 		index += 1
-	sorted_indices = sorted(scores, key=scores.get, reverse=True)
-	return sorted_indices
+	return scores
 
 pool = Pool(args.threads)
 
@@ -69,8 +71,12 @@ while (flag):
 	if len(group_list) > 0:
 		outputs = pool.map(process_group, group_list)
 		for i in range(len(group_list)):
-			sorted_indices = outputs[i]
+			scores = outputs[i]
 			group = group_list[i]
+			sorted_indices = sorted(scores, key=scores.get, reverse=True)
+			if args.out_scores_path:
+				for idx in scores:
+					output_scores.write(str(scores[idx]) + "\n")
 			if args.out_nbest_path:
 				for idx in sorted_indices:
 					output_nbest.write(group[idx])
@@ -81,6 +87,8 @@ while (flag):
 			L.info("%i groups processed" % (group_counter))
 L.info("Finished processing %i groups" % (group_counter))
 
+if args.out_scores_path:
+	output_scores.close()
 if args.out_nbest_path:
 	output_nbest.close()
 output_1best.close()

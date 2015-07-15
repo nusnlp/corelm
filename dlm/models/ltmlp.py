@@ -86,7 +86,8 @@ class MLP(classifier.Classifier):
 			input=last_layer_output,
 			n_in=last_layer_output_size,
 			n_out=num_classes,
-			b_values = numpy.full(shape=(num_classes),fill_value=(-math.log(num_classes)),dtype=theano.config.floatX) 
+			#b_values = numpy.zeros(num_classes) - math.log(num_classes)
+			b_values = numpy.full(shape=(num_classes),fill_value=(-math.log(num_classes)),dtype=theano.config.floatX)
 		)
 		last_layer_output = linearLayer.output
 		self.params += linearLayer.params
@@ -103,7 +104,7 @@ class MLP(classifier.Classifier):
 		
 		#self.log_Z_sqr = T.log(T.mean(T.sum(T.exp(last_layer_output), axis=1))) ** 2
 		#self.log_Z_sqr = T.sum(T.log(T.sum(T.exp(last_layer_output), axis=1))) ** 2
-		self.log_Z_sqr = T.mean(T.log(T.sum(T.exp(last_layer_output), axis=1))**2)
+		self.log_Z_sqr = T.mean(T.log(T.sum(T.exp(last_layer_output), axis=1)) ** 2)
 		
 		######################################################################
 		## Model Predictions
