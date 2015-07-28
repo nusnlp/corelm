@@ -23,7 +23,10 @@ parser.add_argument("-c", "--config", dest="input_config", required=True, help="
 parser.add_argument("-o", "--output-dir", dest="out_dir", required=True, help="Output directory")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-t", "--threads", dest="threads", default = 14, type=int, help="Number of MERT threads")
+parser.add_argument("-iv", "--init-value", dest="init_value", default = '0.05', help="The initial value of the feature")
 parser.add_argument("-n", "--no-aug", dest="no_aug", action='store_true', help="Augmentation will be skipped, if this flag is set")
+parser.add_argument("-a", "--tuning-algorithm", dest="alg", default = 'mert', help="Tuning Algorithm (mert|pro)")
+parser.add_argument("-s", "--predictable-seed", dest="pred_seed", action='store_true', help="Tune with predictable seed to avoid randomness")
 args = parser.parse_args()
 
 U.set_theano_device(args.device)
@@ -61,21 +64,55 @@ with open(args.out_dir + '/init.opt', 'w') as init_opt:
 			init_list += tokens[1:]
 		except ValueError:
 			pass
-	if not args.no_aug:
-		init_list.append('0.05')
+	init_list.append(args.init_value)
 	dim = len(init_list)
 	init_opt.write(' '.join(init_list) + '\n')
 	init_opt.write(' '.join(['0' for i in range(dim)]) + '\n')
 	init_opt.write(' '.join(['1' for i in range(dim)]) + '\n')
-	
-# MERT
-#L.warning('The optional arguments of mert are not used yet')
-L.info('Running MERT')
-cmd = moses_root + '/bin/mert -d ' + str(dim) + ' -S ' + args.out_dir + '/statscore.data -F ' + args.out_dir + '/features.data --ifile ' + args.out_dir + '/init.opt --threads ' + str(args.threads)
-U.capture(cmd)
+
+seed_arg = ''
+if args.pred_seed:
+	seed_arg = ' -r 1234 '
+
+if (args.alg == 'pro'):
+	# PRO
+	L.info("Running PRO")
+	cmd = moses_root + '/bin/pro' + ' -S ' + args.out_dir + '/statscore.data -F ' + args.out_dir + '/features.data -o ' + args.out_dir +'/pro.data' + seed_arg
+	U.capture(cmd)
+	cmd = moses_root + '/bin/megam_i686.opt -fvals -maxi 30 -nobias binary ' + args.out_dir + '/pro.data'
+	pro_weights = U.capture(cmd)
+
+	pro_weights_arr = pro_weights.strip().split('\n')
+	weights_dict = dict()
+	sum = 0.0
+	highest_feature_index = 0
+
+	for elem in pro_weights_arr:
+		feature_index,weight = elem[1:].split()
+		feature_index = int(feature_index)
+		weight = float(weight)
+		weights_dict[feature_index] = weight
+		sum = sum + weight
+		if feature_index >= highest_feature_index:
+			highest_feature_index = feature_index
+
+	# Write normalized weights to the file
+	f_weights = open('weights.txt','w')
+	for feature_index in xrange(highest_feature_index+1):
+		weight = weights_dict[feature_index]
+		f_weights.write(str(weight/sum) + ' ');
+
+
+elif (args.alg == 'mert'):
+	# MERT
+	#L.warning('The optional arguments of mert are not used yet')
+	L.info('Running MERT')
+	cmd = moses_root + '/bin/mert -d ' + str(dim) + ' -S ' + args.out_dir + '/statscore.data -F ' + args.out_dir + '/features.data --ifile ' + args.out_dir + '/init.opt --threads ' + str(args.threads) + seed_arg
+	U.capture(cmd)
+else:
+	L.error('Invalid tuning algorithm: ' + args.alg)
 
 U.xassert(os.path.isfile('weights.txt'), 'Optimization failed')
 
 shutil.move('weights.txt', args.out_dir + '/weights.txt')
 
-L.warning('PRO is not supported yet')
