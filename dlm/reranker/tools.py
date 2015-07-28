@@ -15,10 +15,13 @@ from dlm.io.nbestReader import NBestList
 import codecs
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--command", dest="command", required=True, help="The command (topN|1best|featureN|correlN)")
+parser.add_argument("-c", "--command", dest="command", required=True, help="The command (topN|1best|featureN|correlN|augment)")
 parser.add_argument("-i", "--input-file", dest="input_path", required=True, help="Input n-best file")
 parser.add_argument("-s", "--input-scores", dest="oracle", help="Input oracle scores  the n-best file")
 parser.add_argument("-o", "--output-file", dest="output_path", required=True, help="Output file")
+parser.add_argument("-v", "--vocab-file", dest="vocab_path", help="The vocabulary file.")
+parser.add_argument("-m", "--model-file", dest="model_path",  help="Input PrimeLM model file")
+parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 
 input_nbest = NBestList(args.input_path, mode='r')
@@ -43,6 +46,10 @@ elif args.command.startswith('correl'):
 	with open(args.oracle, mode='r') as oracles_file:
 		oracles = map(float, oracles_file.read().splitlines())
 	#output = open(args.output_path, mode='w')
+elif args.command.startswith('augment'):
+	U.set_theano_device(args.device)
+	from dlm.reranker import augmenter
+	augmenter.augment(args.model_path, args.input_path, args.vocab_path, args.output_path)
 else:
 	L.error('Invalid command: ' + args.command)
 
