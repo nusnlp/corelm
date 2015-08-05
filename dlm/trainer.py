@@ -48,6 +48,7 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 		lr = trainer.get_learning_rate()
 		lr = lr_tuner.adapt_lr(dev_ppl, lr)
 		trainer.set_learning_rate(lr)
+		classifier.save_model(args.out_dir + '/model.epoch_' + str(epoch))
 
 	end_time = time.time()
 	hook.evaluate(total_num_iter)
@@ -91,7 +92,7 @@ class Hook:
 		if self.test_eval:
 			L.info('TEST => Error=%.2f%%, PPL=%.2f (best=%.2f)' % (test_error * 100., test_perplexity, self.best_test_perplexity))
 		
-		self.classifier.save_model(self.out_dir + '/model.iter_' + str(curr_iter))
+		#self.classifier.save_model(self.out_dir + '/model.iter_' + str(curr_iter))
 		
 		return dev_perplexity
 
