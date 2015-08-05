@@ -19,16 +19,17 @@ class MemMapReader():
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')
 		self.num_samples = fp[0]
 		self.ngram = fp[1]
-		self.num_word_types = fp[2]
+		fp = fp.reshape((self.num_samples + 3, self.ngram))
+		self.vocab_size = fp[1,0]
+		self.num_classes = fp[2,0]
 
 		# Setting minibatch size and number of mini batches
 		self.batch_size = batch_size
 		self.num_batches = int(M.ceil(self.num_samples / self.batch_size))
 		
 		# Reading the matrix of samples
-		fp = fp.reshape((self.num_samples + 1, self.ngram))
-		x = fp[1:,0:self.ngram - 1]			# Reading the context indices
-		y = fp[1:,self.ngram - 1]			# Reading the output word index
+		x = fp[3:,0:self.ngram - 1]			# Reading the context indices
+		y = fp[3:,self.ngram - 1]			# Reading the output word index
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
 		self.shared_y = T.cast(theano.shared(y, borrow=True), 'int32')
 	
@@ -52,14 +53,14 @@ class MemMapReader():
 		return self.ngram
 	
 	def get_vocab_size(self):
-		return self.num_word_types
+		return self.vocab_size
 	
 	def get_num_classes(self):
-		return self.num_word_types
+		return self.num_classes
 
 	def get_unigram_model(self):
 		unigram_counts = np.bincount(self.shared_y.get_value())
-		unigram_counts = np.append(unigram_counts, np.zeros(self.num_word_types - unigram_counts.size, dtype='int32'))
+		unigram_counts = np.append(unigram_counts, np.zeros(self.num_classes - unigram_counts.size, dtype='int32'))
 		sum_unigram_counts = np.sum(unigram_counts)
 
 		unigram_model = unigram_counts / sum_unigram_counts
