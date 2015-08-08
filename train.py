@@ -21,7 +21,7 @@ parser.add_argument("-b", "--batch-size", dest="batchsize", default=128, type=in
 parser.add_argument("-l", "--learning-rate", dest="learning_rate", default=0.01, type=float, help="Learning rate. Default: 0.01")
 parser.add_argument("-D", "--learning-rate-decay", dest="learning_rate_decay", default=0, type=float, help="Learning rate decay (e.g. 0.995) (TO DO). Default: 0")
 parser.add_argument("-m", "--momentum", dest="momentum", default=0, type=float, help="Momentum (TO DO). Default: 0")
-parser.add_argument("-lf","--loss-function", dest="loss_function", default="log", help="Loss function (log|nce). Default: log")
+parser.add_argument("-lf","--loss-function", dest="loss_function", default="nll", help="Loss function (nll|nce). Default: nll (Negative Log Likelihood)")
 parser.add_argument("-ns","--noise-samples", dest="num_noise_samples", default=100 ,type=int, help="Number of noise samples for noise contrastive estimation. Default:100")
 parser.add_argument("-e", "--num-epochs", dest="num_epochs", default=50, type=int, help="Number of iterations (epochs). Default: 50")
 parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=float, help="Self normalization coefficient (alpha). Default: 0")
@@ -70,7 +70,7 @@ classifier = MLP(args)
 #########################
 ## Training criterion
 #
-if args.loss_function == "log":
+if args.loss_function == "nll":
 	from dlm.criterions.likelihood import NegLogLikelihood
 	criterion = NegLogLikelihood(classifier, args)
 elif args.loss_function == "nce":

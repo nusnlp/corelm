@@ -24,7 +24,6 @@ prune_args.add_argument("--input-vocab-file", dest="input_vocab_path", help="Pat
 
 args = parser.parse_args()
 
-U.xassert(args.ngram_size > 2, "N-gram sizes of less than 3 is not supported yet, because of our memory-mapped file format")
 
 if (not os.path.exists(args.output_dir_path)):
 	os.makedirs(args.output_dir_path)
@@ -135,11 +134,12 @@ if args.shuffle:
 
 # Creating the memory-mapped file
 with open(tmp_path, 'r') as data:
-	fp = np.memmap(output_path, dtype='int32', mode='w+', shape=(nsamples + 1, args.ngram_size))
+	fp = np.memmap(output_path, dtype='int32', mode='w+', shape=(nsamples + 3, args.ngram_size))
 	fp[0,0] = nsamples					# number of samples
 	fp[0,1] = args.ngram_size			# n-gram size
-	fp[0,2] = len(word_to_id_dict)		# number of word types (MLP classes)
-	counter = 1
+	fp[1,0] = len(word_to_id_dict)		# vocab size (MLP classes)
+	fp[2,0] = len(word_to_id_dict)		# number of word types (MLP classes)
+	counter = 3
 	for line in data:
 		tokens = line.split()
 		fp[counter] = tokens
