@@ -122,11 +122,12 @@ def get_all_windows(input_list, window_size):
 
 #-----------------------------------------------------------------------------------------------------------#
 
-def set_theano_device(device):
+def set_theano_device(device, threads):
 	import sys
 	import dlm.io.logging as L
 	xassert(device == "cpu" or device == "gpu", "The device can only be 'cpu' or 'gpu'")
 	xassert(sys.modules.has_key('theano') == False, "dlm.utils.set_theano_device() function cannot be called after importing theano")
+	os.environ['OMP_NUM_THREADS'] = str(threads)
 	os.environ['THEANO_FLAGS'] = 'device=' + device
 	os.environ['THEANO_FLAGS'] += ',force_device=True'
 	os.environ['THEANO_FLAGS'] += ',floatX=float32'
