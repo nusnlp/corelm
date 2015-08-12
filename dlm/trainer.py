@@ -44,6 +44,9 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 			curr_iter = (epoch - 1) * num_train_batches + minibatch_index
 			if curr_iter > 0 and curr_iter % validation_frequency == 0:
 				hook.evaluate(curr_iter)
+
+		L.info(U.BColors.BLUE + "[" + time.ctime() + "] " + U.BColors.ENDC + '%i/%i, cost=%.2f, lr=%f'
+			% (num_train_batches, num_train_batches, minibatch_avg_cost_sum/num_train_batches, trainer.get_learning_rate()))
 		dev_ppl = hook.evaluate(curr_iter)
 		lr = trainer.get_learning_rate()
 		lr = lr_tuner.adapt_lr(dev_ppl, lr)
