@@ -25,13 +25,15 @@ parser.add_argument("-d", "--device", dest="device", default="gpu", help="The co
 parser.add_argument("-t", "--threads", dest="threads", default = 14, type=int, help="Number of MERT threads")
 parser.add_argument("-iv", "--init-value", dest="init_value", default = '0.05', help="The initial value of the feature")
 parser.add_argument("-n", "--no-aug", dest="no_aug", action='store_true', help="Augmentation will be skipped, if this flag is set")
-parser.add_argument("-a", "--tuning-algorithm", dest="alg", default = 'mert', help="Tuning Algorithm (mert|pro)")
+parser.add_argument("-a", "--tuning-algorithm", dest="alg", default = 'mert', help="Tuning Algorithm (mert|pro|wpro)")
+parser.add_argument("-w", "--instance-weights", dest="instance_weights_path", help="Instance weights for wpro algorithm")
 parser.add_argument("-s", "--predictable-seed", dest="pred_seed", action='store_true', help="Tune with predictable seed to avoid randomness")
 args = parser.parse_args()
 
 U.set_theano_device(args.device)
 
 from dlm.reranker import augmenter
+from dlm.reranker import mosesIniReader as iniReader
 
 if os.environ.has_key('MOSES_ROOT'):
 	moses_root = os.environ['MOSES_ROOT']
@@ -39,6 +41,10 @@ else:
 	L.error("Set MOSES_ROOT variable to your moses root directory")
 
 U.mkdir_p(args.out_dir)
+
+#cmd = moses_root + '/bin/moses -show-weights -f ' + args.input_config + ' 2> /dev/null'
+#features = U.capture(cmd).strip().split('\n')
+features = iniReader.parseIni(args.input_config)
 
 output_nbest_path = args.out_dir + '/augmented.nbest'
 
@@ -52,19 +58,17 @@ L.info('Extracting stats and features')
 cmd = moses_root + '/bin/extractor -r ' + args.ref_paths + ' -n ' + output_nbest_path + ' --scfile ' + args.out_dir + '/statscore.data --ffile ' + args.out_dir + '/features.data'
 U.capture(cmd)
 
-cmd = moses_root + '/bin/moses -show-weights -f ' + args.input_config + ' 2> /dev/null'
-features = U.capture(cmd).strip()
-
 with open(args.out_dir + '/init.opt', 'w') as init_opt:
 	init_list = []
-	for line in features.split('\n'):
+	for line in features:
 		tokens = line.split(" ")
 		try:
 			float(tokens[1])
 			init_list += tokens[1:]
 		except ValueError:
 			pass
-	init_list.append(args.init_value)
+	if not args.no_aug:
+		init_list.append(args.init_value)
 	dim = len(init_list)
 	init_opt.write(' '.join(init_list) + '\n')
 	init_opt.write(' '.join(['0' for i in range(dim)]) + '\n')
@@ -74,10 +78,15 @@ seed_arg = ''
 if args.pred_seed:
 	seed_arg = ' -r 1234 '
 
-if (args.alg == 'pro'):
+if (args.alg == 'pro' or args.alg == 'wpro'):
 	# PRO
-	L.info("Running PRO")
-	cmd = moses_root + '/bin/pro' + ' -S ' + args.out_dir + '/statscore.data -F ' + args.out_dir + '/features.data -o ' + args.out_dir +'/pro.data' + seed_arg
+	if args.alg == 'pro':
+		L.info("Running PRO")
+		cmd = moses_root + '/bin/pro' + ' -S ' + args.out_dir + '/statscore.data -F ' + args.out_dir + '/features.data -o ' + args.out_dir +'/pro.data' + seed_arg
+	else:
+		L.info("Running WEIGHTED PRO")
+		U.xassert(args.instance_weights_path, 'Instance weights are not given to wpro')
+		cmd = moses_root + '/bin/proWeighted' + ' -S ' + args.out_dir + '/statscore.data -F ' + args.out_dir + '/features.data -o ' + args.out_dir +'/pro.data' + seed_arg + ' -w ' + args.instance_weights_path
 	U.capture(cmd)
 	cmd = moses_root + '/bin/megam_i686.opt -fvals -maxi 30 -nobias binary ' + args.out_dir + '/pro.data'
 	pro_weights = U.capture(cmd)
@@ -101,8 +110,7 @@ if (args.alg == 'pro'):
 	for feature_index in xrange(highest_feature_index+1):
 		weight = weights_dict[feature_index]
 		f_weights.write(str(weight/sum) + ' ');
-
-
+		#f_weights.write(str(weight) + ' ');
 elif (args.alg == 'mert'):
 	# MERT
 	#L.warning('The optional arguments of mert are not used yet')
