@@ -30,6 +30,15 @@ class Evaluator():
 					y: self.dataset.get_y(index)
 				}
 			)
+			
+			self.unnormalized_neg_sum_batch_log_likelihood = theano.function(
+				inputs=[index],
+				outputs=-T.sum(classifier.unnormalized_p_y_given_x(y)), # which is: -T.sum(T.log(T.exp(classifier.unnormalized_p_y_given_x(y))))
+				givens={
+					x: self.dataset.get_x(index),
+					y: self.dataset.get_y(index)
+				}
+			)
 
 			self.sum_batch_error = theano.function(
 				inputs=[index],
@@ -85,6 +94,9 @@ class Evaluator():
 
 	def get_sequence_log_prob(self, index):
 		return - self.neg_sequence_log_prob(index)
+	
+	def get_unnormalized_sequence_log_prob(self, index):
+		return - self.unnormalized_neg_sum_batch_log_likelihood(index)
 
 	def get_ngram_log_prob(self, x, y):
 		return self.ngram_log_prob(x, y)

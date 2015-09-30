@@ -122,9 +122,12 @@ class MLP(classifier.Classifier):
 	######################################################################
 	## Model Functions
 	#
-		
+	
 	def p_y_given_x(self, y):
 		return self.p_y_given_x_matrix[T.arange(y.shape[0]), y]
+	
+	def unnormalized_p_y_given_x(self, y):
+		return self.output[T.arange(y.shape[0]), y]
 	
 	def negative_log_likelihood(self, y):
 		return -T.mean(T.log(self.p_y_given_x(y)))

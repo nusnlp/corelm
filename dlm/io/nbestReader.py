@@ -35,8 +35,12 @@ class NBestList():
 		hyp = segments[1].strip()
 		features = segments[2].strip()
 		score = segments[3].strip()
-		phrase_alignments = segments[4].strip()
-		word_alignments = segments[5].strip()
+		phrase_alignments = None
+		word_alignments = None
+		if len(segments) > 4:
+			phrase_alignments = segments[4].strip()
+		if len(segments) > 5:
+			word_alignments = segments[5].strip()
 		return NBestItem(index, hyp, features, score, phrase_alignments, word_alignments)
 	
 	def next(self): # Returns a group of NBestItems with the same index
@@ -82,7 +86,12 @@ class NBestItem:
 		self.word_alignments = word_alignments
 	
 	def __unicode__(self):
-		return ' ||| '.join([unicode(self.index), self.hyp, self.features, self.score, self.phrase_alignments, self.word_alignments])
+		output = ' ||| '.join([unicode(self.index), self.hyp, self.features, self.score])
+		if self.phrase_alignments:
+			output = output + ' ||| ' + self.phrase_alignments
+		if self.word_alignments:
+			output = output + ' ||| ' + self.word_alignments
+		return output
 	
 	def append_feature(self, feature):
 		self.features += ' ' + str(feature)
