@@ -19,7 +19,7 @@ parser.add_argument("-dir", "--directory", dest="out_dir", help="The output dire
 
 args = parser.parse_args()
 
-U.set_theano_device('cpu')
+U.set_theano_device('cpu',1)
 from dlm.models.ltmlp import MLP
 
 

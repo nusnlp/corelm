@@ -61,10 +61,27 @@ class Evaluator():
 				}
 			)
 
+			self.get_p_matrix  = theano.function(
+				inputs=[index],
+				outputs=classifier.p_y_given_x_matrix,
+				givens={
+					x:self.dataset.get_x(index)
+				}
+			)
+			self.get_y_pred = theano.function(
+				inputs=[index],
+				outputs=classifier.y_pred,
+				givens={
+					x:self.dataset.get_x(index)
+				}
+			)
+		# End of if
+
 		self.ngram_log_prob = theano.function(
 			inputs=[x, y],
 			outputs=T.log(classifier.p_y_given_x(y)),
 		)
+
 
 	def classification_error(self):
 		return np.sum([self.sum_batch_error(i) for i in xrange(self.num_batches)]) / self.num_samples
@@ -87,3 +104,8 @@ class Evaluator():
 	def get_denominator(self):
 		return np.mean([self.denominator(i) for i in xrange(self.num_batches)])
 
+	def get_class(self, index, restricted_ids = []):
+		if restricted_ids != []:
+			return restricted_ids[np.argmax(self.get_p_matrix(index)[:,restricted_ids])]
+		else:
+			return self.get_y_pred(index)[0]

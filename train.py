@@ -20,7 +20,7 @@ parser.add_argument("-a", "--training-algorithm", dest="algorithm", default="sgd
 parser.add_argument("-b", "--batch-size", dest="batchsize", default=128, type=int, help="Minibatch size for training. Default: 128")
 parser.add_argument("-l", "--learning-rate", dest="learning_rate", default=0.01, type=float, help="Learning rate. Default: 0.01")
 parser.add_argument("-D", "--learning-rate-decay", dest="learning_rate_decay", default=0, type=float, help="Learning rate decay (e.g. 0.995) (TO DO). Default: 0")
-parser.add_argument("-m", "--momentum", dest="momentum", default=0, type=float, help="Momentum (TO DO). Default: 0")
+parser.add_argument("-M", "--momentum", dest="momentum", default=0, type=float, help="Momentum (TO DO). Default: 0")
 parser.add_argument("-lf","--loss-function", dest="loss_function", default="nll", help="Loss function (nll|nce). Default: nll (Negative Log Likelihood)")
 parser.add_argument("-ns","--noise-samples", dest="num_noise_samples", default=100 ,type=int, help="Number of noise samples for noise contrastive estimation. Default:100")
 parser.add_argument("-e", "--num-epochs", dest="num_epochs", default=50, type=int, help="Number of iterations (epochs). Default: 50")
@@ -28,7 +28,9 @@ parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=floa
 parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=float, help="L1 regularization coefficient. Default: 0")
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient. Default: 0")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
-parser.add_argument("--threads", dest="threads", default=12, help="Number of threads when device is CPU (TO DO). Default: 12")
+parser.add_argument("--threads", dest="threads", default=8, help="Number of threads when device is CPU (TO DO). Default: 8")
+#parser.add_argument("-m","--model-file", dest="model_path",  help="The file path to load the model from")
+
 args = parser.parse_args()
 
 if args.out_dir is None:
@@ -38,7 +40,7 @@ U.mkdir_p(args.out_dir)
 L.set_file_path(args.out_dir + "/log.txt")
 
 U.print_args(args)
-U.set_theano_device(args.device)
+U.set_theano_device(args.device,args.threads)
 
 import dlm.trainer
 from dlm.io.mmapReader import MemMapReader
@@ -60,7 +62,6 @@ if args.testset:
 #
 
 L.info('Building the model')
-
 args.vocab_size = trainset.get_vocab_size()
 args.ngram_size = trainset.get_ngram_size()
 args.num_classes = trainset.get_num_classes()
