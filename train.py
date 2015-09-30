@@ -66,12 +66,6 @@ args.vocab_size = trainset.get_vocab_size()
 args.ngram_size = trainset.get_ngram_size()
 args.num_classes = trainset.get_num_classes()
 
-
-
-#if args.model_path:
-#	classifier = MLP(model_path=args.model_path)
-#	classifier.args = args
-#else:
 classifier = MLP(args)
 
 #########################
