@@ -1,5 +1,4 @@
 import theano.tensor as T
-import dlm.utils as U
 import dlm.io.logging as L
 
 class Activation():
