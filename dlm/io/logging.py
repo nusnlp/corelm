@@ -2,6 +2,7 @@ import sys
 import dlm.utils as U
 
 file_path = None
+quiet = False
 
 def set_file_path(path):
 	global file_path
@@ -34,7 +35,9 @@ def exception():
 	sys.exit()
 
 def _write(stderr, log):
-	sys.stderr.write(stderr)
+	global quiet
+	if not quiet:
+		sys.stderr.write(stderr)
 	global file_path
 	if file_path:
 		log_file = open(file_path, 'a')
