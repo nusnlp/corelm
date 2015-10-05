@@ -125,7 +125,12 @@ def get_all_windows(input_list, window_size):
 def set_theano_device(device, threads):
 	import sys
 	import dlm.io.logging as L
-	xassert(device == "cpu" or device == "gpu", "The device can only be 'cpu' or 'gpu'")
+	xassert(device == "cpu" or device.startswith("gpu"), "The device can only be 'cpu', 'gpu' or 'gpu<id>'")
+	if device.startswith("gpu") and len(device) > 3:
+		try:
+			int(device[3:])
+		except ValueError:
+			L.error("Unknown GPU device format: " + device)
 	xassert(sys.modules.has_key('theano') == False, "dlm.utils.set_theano_device() function cannot be called after importing theano")
 	os.environ['OMP_NUM_THREADS'] = str(threads)
 	os.environ['THEANO_FLAGS'] = 'device=' + device

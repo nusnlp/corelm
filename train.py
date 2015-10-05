@@ -28,7 +28,7 @@ parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=floa
 parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=float, help="L1 regularization coefficient. Default: 0")
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient. Default: 0")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
-parser.add_argument("--threads", dest="threads", default=8, help="Number of threads when device is CPU (TO DO). Default: 8")
+parser.add_argument("--threads", dest="threads", default=8, type=int, help="Number of threads when device is CPU. Default: 8")
 #parser.add_argument("-m","--model-file", dest="model_path",  help="The file path to load the model from")
 
 args = parser.parse_args()
@@ -40,7 +40,7 @@ U.mkdir_p(args.out_dir)
 L.set_file_path(args.out_dir + "/log.txt")
 
 U.print_args(args)
-U.set_theano_device(args.device,args.threads)
+U.set_theano_device(args.device, args.threads)
 
 import dlm.trainer
 from dlm.io.mmapReader import MemMapReader
