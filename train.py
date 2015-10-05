@@ -29,6 +29,8 @@ parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=fl
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient. Default: 0")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
 parser.add_argument("--threads", dest="threads", default=8, type=int, help="Number of threads when device is CPU. Default: 8")
+parser.add_argument("--emb-path", dest="emb_path", help="(optional) Word embeddings file.")
+parser.add_argument("--vocab", dest="vocab", help="(optional) Only needed if --emb-path is used.")
 #parser.add_argument("-m","--model-file", dest="model_path",  help="The file path to load the model from")
 
 args = parser.parse_args()
@@ -38,6 +40,12 @@ if args.out_dir is None:
 U.mkdir_p(args.out_dir)
 
 L.set_file_path(args.out_dir + "/log.txt")
+
+if args.emb_path:
+	U.xassert(args.vocab, 'When --emb-path is used, vocab file must be given too (using --vocab).')
+
+if args.loss_function == "nll":
+	args.num_noise_samples = 0
 
 U.print_args(args)
 U.set_theano_device(args.device, args.threads)
@@ -67,6 +75,8 @@ args.ngram_size = trainset.get_ngram_size()
 args.num_classes = trainset.get_num_classes()
 
 classifier = MLP(args)
+
+L.info('Parameters: ' + str(classifier.params))
 
 #########################
 ## Training criterion

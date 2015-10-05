@@ -95,9 +95,6 @@ class Hook:
 		if self.test_eval:
 			L.info(('TEST => Error=%.2f%%, PPL=' + U.BColors.BYELLOW + '%.2f @ %i' + U.BColors.ENDC + ' (' + U.BColors.BRED + '%.2f @ %i' + U.BColors.ENDC + ')')
 				% (test_error * 100., test_perplexity, curr_iter, self.best_test_perplexity, self.best_iter))
-			#L.info('TEST => Error=%.2f%%, PPL=%.2f @ %i (%.2f @ %i)' % (test_error * 100., test_perplexity, curr_iter, self.best_test_perplexity, self.best_iter))
-		
-		#self.classifier.save_model(self.out_dir + '/model.iter_' + str(curr_iter))
 		
 		return dev_perplexity
 

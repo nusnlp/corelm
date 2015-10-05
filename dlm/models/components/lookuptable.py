@@ -2,15 +2,21 @@ import sys
 import theano
 import theano.tensor as T
 import numpy
+import dlm.utils as U
+import dlm.io.logging as L
+from dlm.io.vocabReader import VocabManager
+from dlm.io.w2vEmbReader import W2VEmbReader
 
 class LookupTable():
 	
-	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True):
+	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True, emb_path=None, vocab_path=None):
 
 		self.input = input
+		
+		self.emb_matrix = emb_matrix
 
-		if emb_matrix is None:
-			emb_matrix = numpy.asarray(
+		if self.emb_matrix is None:
+			self.emb_matrix = numpy.asarray(
 				rng.uniform(
 					low=-0.01, #low=-1,
 					high=0.01, #high=1,
@@ -18,7 +24,10 @@ class LookupTable():
 				),
 				dtype=theano.config.floatX
 			)
-		self.emb_matrix = emb_matrix
+		
+		if emb_path:
+			U.xassert(vocab_path, 'When emb_path is given, vocab must be given too.')
+			self.initialize(emb_path, vocab_path)
 		
 		self.embeddings = theano.shared(value=self.emb_matrix, name='embeddings', borrow=True) # Check if borrowing makes any problems
 
@@ -29,3 +38,15 @@ class LookupTable():
 
 		# parameters of the model
 		self.params = [self.embeddings]
+	
+	
+	
+	def initialize(self, emb_path, vocab_path):
+		L.info('Initializing lookup table')
+		vm = VocabManager(vocab_path)
+		w2v = W2VEmbReader(emb_path)
+		U.xassert(w2v.get_emb_dim() == self.emb_matrix.shape[1], 'The embeddings dimension does not match with the given word embeddings')
+		for i in range(self.emb_matrix.shape[0]):
+			vec = w2v.get_emb_given_word(vm.get_word_given_id(i))
+			if vec:
+				self.emb_matrix[i] = vec

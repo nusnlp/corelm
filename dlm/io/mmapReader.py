@@ -1,5 +1,4 @@
 from __future__ import division
-#import dlm.utils as U
 import dlm.io.logging as L
 import numpy as np
 import theano

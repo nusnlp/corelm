@@ -1,10 +1,13 @@
 import numpy
 import theano
 import theano.tensor as T
+import dlm.io.logging as L
 
 class Linear():
 
 	def __init__(self, rng, input, n_in, n_out, W_values=None, b_values=None, no_bias=False, suffix=None):
+		
+		L.info("Hidden Layer, #inputs: %i, #outputs: %i" % (n_in, n_out))
 
 		self.input = input
 

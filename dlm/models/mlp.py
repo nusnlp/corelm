@@ -24,9 +24,12 @@ class MLP(classifier.Classifier):
 		
 		emb_dim = args.emb_dim
 		num_hidden_list = map(int, args.num_hidden.split(','))
-		for i in range(len(num_hidden_list)):
-			#L.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
-			L.info("Hidden Layer " + str(i+1) + ": " + U.BColors.RED + str(num_hidden_list[i]) + U.BColors.ENDC)
+		if num_hidden_list[0] <= 0:
+			num_hidden_list = []
+		#for i in range(len(num_hidden_list)):
+		#	#L.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
+		#	L.info("Hidden Layer " + str(i+1) + ": " + U.BColors.RED + str(num_hidden_list[i]) + U.BColors.ENDC)
+
 		vocab_size = args.vocab_size
 		self.ngram_size = args.ngram_size
 		num_classes = args.num_classes
@@ -35,6 +38,9 @@ class MLP(classifier.Classifier):
 		self.L1 = 0
 		self.L2_sqr = 0
 		self.params = []
+		
+		emb_path = args.emb_path
+		vocab = args.vocab
 		
 		rng = numpy.random.RandomState(1234)
 		self.input = T.imatrix('input')
@@ -47,7 +53,9 @@ class MLP(classifier.Classifier):
 			rng=rng,
 			input=self.input,
 			vocab_size=vocab_size,
-			emb_dim=emb_dim
+			emb_dim=emb_dim,
+			emb_path=emb_path,
+			vocab_path=vocab
 		)
 		last_layer_output = lookupTableLayer.output
 		last_layer_output_size = (self.ngram_size - 1) * emb_dim
@@ -62,7 +70,8 @@ class MLP(classifier.Classifier):
 				rng=rng,
 				input=last_layer_output,
 				n_in=last_layer_output_size,
-				n_out=num_hidden_list[i]
+				n_out=num_hidden_list[i],
+				suffix=i
 			)
 			last_layer_output = linearLayer.output
 			last_layer_output_size = num_hidden_list[i]
@@ -87,7 +96,8 @@ class MLP(classifier.Classifier):
 			n_in=last_layer_output_size,
 			n_out=num_classes,
 			#b_values = numpy.zeros(num_classes) - math.log(num_classes)
-			b_values = numpy.full(shape=(num_classes),fill_value=(-math.log(num_classes)),dtype=theano.config.floatX)
+			b_values = numpy.full(shape=(num_classes),fill_value=(-math.log(num_classes)),dtype=theano.config.floatX),
+			suffix='out'
 		)
 		last_layer_output = linearLayer.output
 		self.params += linearLayer.params
