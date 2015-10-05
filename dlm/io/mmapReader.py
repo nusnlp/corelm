@@ -32,6 +32,11 @@ class MemMapReader():
 		y = fp[3:,self.ngram - 1]			# Reading the output word index
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
 		self.shared_y = T.cast(theano.shared(y, borrow=True), 'int32')
+		
+		L.info('  #samples: %i, ngram size: %i, vocab size: %i, #classes: %i, batch size: %i, #batches: %i' % (
+				self.num_samples, self.ngram, self.vocab_size, self.num_classes, self.batch_size, self.num_batches
+			)
+		)
 	
 	#### Accessors
 	

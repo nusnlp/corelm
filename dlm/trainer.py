@@ -90,10 +90,12 @@ class Hook:
 		t1 = time.time()
 		rem_time = int((self.total_num_iter - curr_iter) * (t1 - self.t0) / curr_iter)
 
-		L.info(('DEV =>  Error=%.2f%%, PPL=' + U.BColors.BYELLOW + '%.2f @ %i' + U.BColors.ENDC + ' (best=' + U.BColors.BRED + '%.2f @ %i' + U.BColors.ENDC + '), Denom=%.3f, %im')
+		L.info(('DEV  => Error=%.2f%%, PPL=' + U.BColors.BYELLOW + '%.2f @ %i' + U.BColors.ENDC + ' (' + U.BColors.BRED + '%.2f @ %i' + U.BColors.ENDC + '), Denom=%.3f, %im')
 			% (dev_error * 100., dev_perplexity, curr_iter, self.best_dev_perplexity, self.best_iter, denominator, rem_time / 60))
 		if self.test_eval:
-			L.info('TEST => Error=%.2f%%, PPL=%.2f (best=%.2f)' % (test_error * 100., test_perplexity, self.best_test_perplexity))
+			L.info(('TEST => Error=%.2f%%, PPL=' + U.BColors.BYELLOW + '%.2f @ %i' + U.BColors.ENDC + ' (' + U.BColors.BRED + '%.2f @ %i' + U.BColors.ENDC + ')')
+				% (test_error * 100., test_perplexity, curr_iter, self.best_test_perplexity, self.best_iter))
+			#L.info('TEST => Error=%.2f%%, PPL=%.2f @ %i (%.2f @ %i)' % (test_error * 100., test_perplexity, curr_iter, self.best_test_perplexity, self.best_iter))
 		
 		#self.classifier.save_model(self.out_dir + '/model.iter_' + str(curr_iter))
 		

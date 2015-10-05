@@ -5,6 +5,11 @@ import sys, os
 import tempfile
 import shutil
 import argparse
+try:
+	import dlm
+except ImportError:
+	print "[ERROR] dlm module not found. Add PrimeLM root directory to your PYTHONPATH"
+	sys.exit()
 import dlm.utils as U
 import dlm.io.logging as L
 
