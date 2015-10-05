@@ -5,11 +5,11 @@ import numpy
 
 class LookupTable():
 	
-	def __init__(self, rng, input, vocab_size, emb_dim, embeddings=None):
+	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True):
 
 		self.input = input
 
-		if embeddings is None:
+		if emb_matrix is None:
 			emb_matrix = numpy.asarray(
 				rng.uniform(
 					low=-0.01, #low=-1,
@@ -18,11 +18,14 @@ class LookupTable():
 				),
 				dtype=theano.config.floatX
 			)
-			embeddings = theano.shared(value=emb_matrix, name='embeddings', borrow=True) # Check if borrowing makes any problems
+		self.emb_matrix = emb_matrix
 		
-		self.embeddings = embeddings
+		self.embeddings = theano.shared(value=self.emb_matrix, name='embeddings', borrow=True) # Check if borrowing makes any problems
 
-		self.output = self.embeddings[input].reshape((input.shape[0], emb_dim * input.shape[1]))
+		if concat:
+			self.output = self.embeddings[input].reshape((input.shape[0], emb_dim * input.shape[1]))
+		else:
+			self.output = self.embeddings[input]
 
 		# parameters of the model
 		self.params = [self.embeddings]
