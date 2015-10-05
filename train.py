@@ -72,7 +72,7 @@ classifier = MLP(args)
 ## Training criterion
 #
 if args.loss_function == "nll":
-	from dlm.criterions.likelihood import NegLogLikelihood
+	from dlm.criterions.nll import NegLogLikelihood
 	criterion = NegLogLikelihood(classifier, args)
 elif args.loss_function == "nce":
 	from dlm.criterions.nce import NCELikelihood
