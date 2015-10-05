@@ -22,7 +22,12 @@ parser.add_argument("-w", "--weights", dest="weights", required=True, help="Inpu
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-o", "--output-dir", dest="out_dir", required=True, help="Output directory")
 parser.add_argument("-n", "--no-aug", dest="no_aug", action='store_true', help="Augmentation will be skipped, if this flag is set")
+parser.add_argument("-c", "--clean-up", dest="clean_up", action='store_true', help="Temporary files will be removed")
+parser.add_argument("-q", "--quiet", dest="quiet", action='store_true', help="Nothing will be printed in STDERR")
 args = parser.parse_args()
+
+if args.quiet:
+	L.quiet = True
 
 U.set_theano_device(args.device)
 
@@ -81,3 +86,6 @@ L.info("Finished processing %i groups" % (counter))
 
 output_nbest.close()
 output_1best.close()
+
+if args.clean_up:
+	os.remove(output_nbest_path)
