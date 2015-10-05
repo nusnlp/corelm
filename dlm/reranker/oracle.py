@@ -24,7 +24,11 @@ parser.add_argument("-b", "--output-1best-file", dest="out_1best_path", required
 parser.add_argument("-s", "--output-scores", dest="out_scores_path", help="Output oracle scores file")
 parser.add_argument("-m", "--smoothing-method", dest="method", required=True, help="Smoothing method (none|epsilon|lin|nist|chen)")
 parser.add_argument("-t", "--threads", dest="threads", type=int, default=14, help="Number of threads")
+parser.add_argument("-q", "--quiet", dest="quiet", action='store_true', help="Nothing will be printed in STDERR")
 args = parser.parse_args()
+
+if args.quiet:
+	L.quiet = True
 
 methods = {
 	'none'    : B.no_smoothing,
@@ -76,7 +80,7 @@ while (flag):
 			sorted_indices = sorted(scores, key=scores.get, reverse=True)
 			if args.out_scores_path:
 				for idx in scores:
-					output_scores.write(str(scores[idx]) + "\n")
+					output_scores.write(str(group.group_index) + ' ' + str(idx) + ' ' + str(scores[idx]) + "\n")
 			if args.out_nbest_path:
 				for idx in sorted_indices:
 					output_nbest.write(group[idx])
