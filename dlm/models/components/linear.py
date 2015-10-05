@@ -4,7 +4,7 @@ import theano.tensor as T
 
 class Linear():
 
-	def __init__(self, rng, input, n_in, n_out, W_values=None, b_values=None):
+	def __init__(self, rng, input, n_in, n_out, W_values=None, b_values=None, no_bias=False, suffix=None):
 
 		self.input = input
 
@@ -17,16 +17,25 @@ class Linear():
 				),
 				dtype=theano.config.floatX
 			)
-		W = theano.shared(value=W_values, name='W', borrow=True)
 
-		if b_values is None:
+		if b_values is None and not no_bias:
 			b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
-		b = theano.shared(value=b_values, name='b', borrow=True)
-
+		
+		W_name = 'W'
+		if suffix is not None:
+			W_name += '.' + str(suffix)
+		
+		W = theano.shared(value=W_values, name=W_name, borrow=True)
 		self.W = W
-		self.b = b
 
-		self.output = T.dot(input, self.W) + self.b
-
-		# parameters of the model
-		self.params = [self.W, self.b]
+		if no_bias:
+			self.output = T.dot(input, self.W)
+			self.params = [self.W]
+		else:
+			b_name = 'b'
+			if suffix is not None:
+				b_name += '.' + str(suffix)
+			b = theano.shared(value=b_values, name=b_name, borrow=True)
+			self.b = b
+			self.output = T.dot(input, self.W) + self.b
+			self.params = [self.W, self.b]
