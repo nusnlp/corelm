@@ -27,7 +27,7 @@ parser.add_argument("-dir", "--directory", dest="out_dir", help="The output dire
 args = parser.parse_args()
 
 U.set_theano_device('cpu',1)
-from dlm.models.ltmlp import MLP
+from dlm.models.mlp import MLP
 
 if args.out_dir is None:
 	args.out_dir = 'primelm_convert-' + U.curr_time()

@@ -4,7 +4,7 @@ import time
 from theano import *
 import theano.tensor as T
 from dlm.io.mmapReader import MemMapReader
-from dlm.models.ltmlp import MLP
+from dlm.models.mlp import MLP
 import dlm.utils as U
 import math
 import numpy as np

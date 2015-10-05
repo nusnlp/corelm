@@ -1,7 +1,7 @@
 import time
 import dlm.utils as U
 import dlm.io.logging as L
-from dlm.models.ltmlp import MLP
+from dlm.models.mlp import MLP
 from dlm import eval
 from dlm.io.nbestReader import NBestList
 from dlm.io.vocabReader import VocabManager

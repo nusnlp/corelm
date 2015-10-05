@@ -44,7 +44,7 @@ U.set_theano_device(args.device, args.threads)
 
 import dlm.trainer
 from dlm.io.mmapReader import MemMapReader
-from dlm.models.ltmlp import MLP
+from dlm.models.mlp import MLP
 
 #########################
 ## Loading datasets

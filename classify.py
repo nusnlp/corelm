@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 U.set_theano_device(args.device,1)
 
-from dlm.models.ltmlp import MLP
+from dlm.models.mlp import MLP
 from dlm import eval
 import theano
 import theano.tensor as T
