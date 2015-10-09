@@ -59,7 +59,8 @@ class MLP(classifier.Classifier):
 			vocab_size=vocab_size,
 			emb_dim=emb_dim,
 			emb_path=emb_path,
-			vocab_path=vocab
+			vocab_path=vocab,
+			add_weights=args.weighted_emb
 		)
 		last_layer_output = lookupTableLayer.output
 		last_layer_output_size = (self.ngram_size - 1) * emb_dim

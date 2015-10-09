@@ -28,6 +28,7 @@ parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=floa
 parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=float, help="L1 regularization coefficient. Default: 0")
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient. Default: 0")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
+parser.add_argument("--weighted", dest="weighted_emb", action='store_true', help="Use this flag to add per-word weights to embeddings.")
 parser.add_argument("--threads", dest="threads", default=8, type=int, help="Number of threads when device is CPU. Default: 8")
 parser.add_argument("--emb-path", dest="emb_path", help="(optional) Word embeddings file.")
 parser.add_argument("--vocab", dest="vocab", help="(optional) Only needed if --emb-path is used.")
