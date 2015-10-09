@@ -1,9 +1,11 @@
+from __future__ import division
 import theano.tensor as T
 import dlm.io.logging as L
 
 class Activation():
 
 	def __init__(self, input, func_name):
+		L.info("Activation layer, function: " + func_name)
 		self.input = input
 		self.func = self.get_function(func_name)
 		self.output = self.func(input)
@@ -27,5 +29,12 @@ class Activation():
 			return lambda x: x * (x > 0)
 		elif func_name == 'cappedrelu':
 			return lambda x: T.minimum(x * (x > 0), 6)
+		elif func_name == 'softmax':
+			return T.nnet.softmax
+		elif func_name == 'norm1':
+			return lambda x: x / T.nlinalg.norm(x, 1)
+		elif func_name == 'norm2':
+			#return lambda x: x / T.nlinalg.norm(x, 2)
+			return lambda x: x / T.dot(x, x)**0.5
 		else:
 			L.error('Invalid function name given: ' + func_name)
