@@ -39,8 +39,12 @@ class MLP(classifier.Classifier):
 		self.L2_sqr = 0
 		self.params = []
 		
-		emb_path = args.emb_path
-		vocab = args.vocab
+		emb_path, vocab = None, None
+		try:
+			emb_path = args.emb_path
+			vocab = args.vocab
+		except AttributeError:
+			pass
 		
 		rng = numpy.random.RandomState(1234)
 		self.input = T.imatrix('input')

@@ -21,7 +21,7 @@ parser.add_argument("-ppl", "--perplexity", action='store_true', help="Compute p
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 
-U.set_theano_device(args.device)
+U.set_theano_device(args.device, 1)
 
 from dlm.models.mlp import MLP
 from dlm import eval

@@ -7,7 +7,7 @@ class Linear():
 
 	def __init__(self, rng, input, n_in, n_out, W_values=None, b_values=None, no_bias=False, suffix=None):
 		
-		L.info("Hidden Layer, #inputs: %i, #outputs: %i" % (n_in, n_out))
+		L.info("Linear layer, #inputs: %i, #outputs: %i" % (n_in, n_out))
 
 		self.input = input
 
