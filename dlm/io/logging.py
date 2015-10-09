@@ -13,13 +13,13 @@ def set_file_path(path):
 
 def error(message):
 	stderr = U.BColors.BFAIL + "[ERROR] " + U.BColors.ENDC + message + "\n"
-	log = "[ERROR] " + message + "\n"
+	log = "[ERROR] " + U.BColors.cleared(message) + "\n"
 	_write(stderr, log)
 	sys.exit()
 
 def warning(message):
 	stderr = U.BColors.BWARNING + "[WARNING] " + U.BColors.ENDC + message + "\n"
-	log = "[WARNING] " + message + "\n"
+	log = "[WARNING] " + U.BColors.cleared(message) + "\n"
 	_write(stderr, log)
 
 def info(message):
