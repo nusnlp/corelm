@@ -26,9 +26,6 @@ class MLP(classifier.Classifier):
 		num_hidden_list = map(int, args.num_hidden.split(','))
 		if num_hidden_list[0] <= 0:
 			num_hidden_list = []
-		#for i in range(len(num_hidden_list)):
-		#	#L.info("Hidden Layer %i: %i" % (i+1, num_hidden_list[i]))
-		#	L.info("Hidden Layer " + str(i+1) + ": " + U.BColors.RED + str(num_hidden_list[i]) + U.BColors.ENDC)
 
 		vocab_size = args.vocab_size
 		self.ngram_size = args.ngram_size
@@ -144,10 +141,11 @@ class MLP(classifier.Classifier):
 	def unnormalized_p_y_given_x(self, y):
 		return self.output[T.arange(y.shape[0]), y]
 	
-	def negative_log_likelihood(self, y):
-		return -T.mean(T.log(self.p_y_given_x(y)))
-
-		
+	def negative_log_likelihood(self, y, weights=None):
+		if weights:
+			return -T.mean(T.log(self.p_y_given_x(y)) * weights)
+		else:
+			return -T.mean(T.log(self.p_y_given_x(y)))
 
 	def errors(self, y):
 		if y.ndim != self.y_pred.ndim:

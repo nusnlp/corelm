@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys, os
 import argparse
 import dlm.utils as U
 import dlm.io.logging as L
@@ -28,19 +29,30 @@ parser.add_argument("-c", "--self-norm-coef", dest="alpha", default=0, type=floa
 parser.add_argument("-L1", "--L1-regularizer", dest="L1_reg", default=0, type=float, help="L1 regularization coefficient. Default: 0")
 parser.add_argument("-L2", "--L2-regularizer", dest="L2_reg", default=0, type=float, help="L2 regularization coefficient. Default: 0")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
-parser.add_argument("--weighted", dest="weighted_emb", action='store_true', help="Use this flag to add per-word weights to embeddings.")
+parser.add_argument("-iw", "--instance-weights-path", dest="instance_weights_path", help="(optional) Instance weights file.")
+parser.add_argument("--weighted-emb", dest="weighted_emb", action='store_true', help="Use this flag to add per-word weights to embeddings.")
 parser.add_argument("--threads", dest="threads", default=8, type=int, help="Number of threads when device is CPU. Default: 8")
 parser.add_argument("--emb-path", dest="emb_path", help="(optional) Word embeddings file.")
 parser.add_argument("--vocab", dest="vocab", help="(optional) Only needed if --emb-path is used.")
+parser.add_argument("--quiet", dest="quiet", action='store_true', help="Use this flag to disable the logger.")
 #parser.add_argument("-m","--model-file", dest="model_path",  help="The file path to load the model from")
 
 args = parser.parse_args()
+
+args.cwd = os.getcwd()
 
 if args.out_dir is None:
 	args.out_dir = 'primelm-' + U.curr_time()
 U.mkdir_p(args.out_dir)
 
-L.set_file_path(args.out_dir + "/log.txt")
+L.quiet = args.quiet
+L.set_file_path(os.path.abspath(args.out_dir) + "/log.txt")
+
+L.info('Command: ' + ' '.join(sys.argv))
+
+curr_version = U.curr_version()
+if curr_version:
+	L.info("Version: " + curr_version)
 
 if args.emb_path:
 	U.xassert(args.vocab, 'When --emb-path is used, vocab file must be given too (using --vocab).')
@@ -59,7 +71,7 @@ from dlm.models.mlp import MLP
 ## Loading datasets
 #
 
-trainset = MemMapReader(args.trainset, batch_size=args.batchsize)
+trainset = MemMapReader(args.trainset, batch_size=args.batchsize, instance_weights_path=args.instance_weights_path)
 devset = MemMapReader(args.devset)
 testset = None
 if args.testset:
@@ -83,7 +95,7 @@ L.info('Parameters: ' + str(classifier.params))
 ## Training criterion
 #
 if args.loss_function == "nll":
-	from dlm.criterions.nll import NegLogLikelihood
+	from dlm.criterions.weighted_nll import NegLogLikelihood
 	criterion = NegLogLikelihood(classifier, args)
 elif args.loss_function == "nce":
 	from dlm.criterions.nce import NCELikelihood

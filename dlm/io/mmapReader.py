@@ -1,18 +1,20 @@
 from __future__ import division
 import dlm.io.logging as L
+import dlm.utils as U
 import numpy as np
 import theano
 import theano.tensor as T
 import math as M
 import sys
+import os
 
 class MemMapReader():
 	
 	#### Constructor
 	
-	def __init__(self, dataset_path, batch_size=500):
+	def __init__(self, dataset_path, batch_size=500, instance_weights_path=None):
 		
-		L.info("Initializing dataset from: " + dataset_path)
+		L.info("Initializing dataset from: " + os.path.abspath(dataset_path))
 		
 		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')
@@ -32,8 +34,15 @@ class MemMapReader():
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
 		self.shared_y = T.cast(theano.shared(y, borrow=True), 'int32')
 		
-		L.info('  #samples: %i, ngram size: %i, vocab size: %i, #classes: %i, batch size: %i, #batches: %i' % (
-				self.num_samples, self.ngram, self.vocab_size, self.num_classes, self.batch_size, self.num_batches
+		self.is_weighted = False
+		if instance_weights_path:
+			instance_weights = np.loadtxt(instance_weights_path)
+			U.xassert(instance_weights.shape == (self.num_samples,), "The number of lines in weights file must be the same as the number of samples.")
+			self.shared_w = T.cast(theano.shared(instance_weights, borrow=True), theano.config.floatX)
+			self.is_weighted = True
+		
+		L.info('  #samples: %s, ngram size: %s, vocab size: %s, #classes: %s, batch size: %s, #batches: %s' % (
+				U.red(self.num_samples), U.red(self.ngram), U.red(self.vocab_size), U.red(self.num_classes), U.red(self.batch_size), U.red(self.num_batches)
 			)
 		)
 	
@@ -44,6 +53,9 @@ class MemMapReader():
 	
 	def get_y(self, index):
 		return self.shared_y[index * self.batch_size : (index+1) * self.batch_size]
+	
+	def get_w(self, index):
+		return self.shared_w[index * self.batch_size : (index+1) * self.batch_size]
 	
 	#### INFO
 	
