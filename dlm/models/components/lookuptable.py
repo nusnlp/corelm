@@ -11,7 +11,7 @@ class LookupTable():
 	
 	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True, emb_path=None, vocab_path=None, add_weights=False):
 		
-		L.info("Lookup Table layer, #words: %i, #dims: %i" % (vocab_size, emb_dim))
+		L.info("Lookup Table layer, #words: %s, #dims: %s" % (U.red(vocab_size), U.red(emb_dim)))
 
 		self.input = input
 		

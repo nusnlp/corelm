@@ -1,11 +1,12 @@
 from __future__ import division
 import theano.tensor as T
 import dlm.io.logging as L
+import dlm.utils as U
 
 class Activation():
 
 	def __init__(self, input, func_name):
-		L.info("Activation layer, function: " + func_name)
+		L.info("Activation layer, function: " + U.red(func_name))
 		self.input = input
 		self.func = self.get_function(func_name)
 		self.output = self.func(input)

@@ -72,6 +72,18 @@ class BColors:
 	@staticmethod
 	def cleared(s):
 		return re.sub("\033\[[0-9][0-9]?m", "", s)
+
+def red(message):
+	return BColors.RED + str(message) + BColors.ENDC
+
+def b_red(message):
+	return BColors.BRED + str(message) + BColors.ENDC
+
+def blue(message):
+	return BColors.BLUE + str(message) + BColors.ENDC
+
+def b_yellow(message):
+	return BColors.BYELLOW + str(message) + BColors.ENDC
 	
 #-----------------------------------------------------------------------------------------------------------#
 	
@@ -122,13 +134,21 @@ def get_all_windows(input_list, window_size):
 
 #-----------------------------------------------------------------------------------------------------------#
 
+def is_gpu_free(gpu_id):
+	out = capture('nvidia-smi -i ' + str(gpu_id)).strip()
+	tokens = out.split('\n')[-2].split()
+	return ' '.join(tokens[1:5]) == 'No running processes found'
+
 def set_theano_device(device, threads):
 	import sys
 	import dlm.io.logging as L
 	xassert(device == "cpu" or device.startswith("gpu"), "The device can only be 'cpu', 'gpu' or 'gpu<id>'")
 	if device.startswith("gpu") and len(device) > 3:
 		try:
-			int(device[3:])
+			gpu_id = int(device[3:])
+			L.warning('Running on GPU yields non-deterministic results.')
+			if not is_gpu_free(gpu_id):
+				L.warning('The selected GPU (GPU' + str(gpu_id) + ') is apparently busy.')
 		except ValueError:
 			L.error("Unknown GPU device format: " + device)
 	xassert(sys.modules.has_key('theano') == False, "dlm.utils.set_theano_device() function cannot be called after importing theano")
@@ -170,6 +190,11 @@ def curr_time():
 	t = time.localtime()
 	return '%i-%i-%i-%ih-%im-%is' % (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
 
-
-
-
+def curr_version():
+	import dlm.io.logging as L
+	info_path = os.path.dirname(sys.argv[0]) + '/.git/refs/heads/master'
+	if os.path.exists(info_path):
+		with open(info_path, 'r') as info_file:
+			return info_file.next().strip()
+	L.warning('Unable to read current version.')
+	return None

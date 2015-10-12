@@ -2,12 +2,13 @@ import numpy
 import theano
 import theano.tensor as T
 import dlm.io.logging as L
+import dlm.utils as U
 
 class Linear():
 
 	def __init__(self, rng, input, n_in, n_out, W_values=None, b_values=None, no_bias=False, suffix=None):
 		
-		L.info("Linear layer, #inputs: %i, #outputs: %i" % (n_in, n_out))
+		L.info("Linear layer, #inputs: %s, #outputs: %s" % (U.red(n_in), U.red(n_out)))
 
 		self.input = input
 

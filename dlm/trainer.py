@@ -29,23 +29,25 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	start_time = time.time()
 	verbose_freq = 1000 # minibatches
 	epoch = 0
-
+	
+	hook.evaluate(0)
+	
 	while (epoch < args.num_epochs):
 		epoch = epoch + 1
-		L.info("Epoch: " + U.BColors.RED + str(epoch) + U.BColors.ENDC)
+		L.info("Epoch: " + U.red(epoch))
 		minibatch_avg_cost_sum = 0
 		for minibatch_index in xrange(num_train_batches):
 			minibatch_avg_cost = trainer.step(minibatch_index)
 			minibatch_avg_cost_sum += minibatch_avg_cost
 			
 			if minibatch_index % verbose_freq == 0:
-				L.info(U.BColors.BLUE + "[" + time.ctime() + "] " + U.BColors.ENDC + '%i/%i, cost=%.2f, lr=%f'
+				L.info(U.blue("[" + time.ctime() + "] ") + '%i/%i, cost=%.2f, lr=%f'
 					% (minibatch_index, num_train_batches, minibatch_avg_cost_sum/(minibatch_index+1), trainer.get_learning_rate()))
 			curr_iter = (epoch - 1) * num_train_batches + minibatch_index
 			if curr_iter > 0 and curr_iter % validation_frequency == 0:
 				hook.evaluate(curr_iter)
 
-		L.info(U.BColors.BLUE + "[" + time.ctime() + "] " + U.BColors.ENDC + '%i/%i, cost=%.2f, lr=%f'
+		L.info(U.blue("[" + time.ctime() + "] ") + '%i/%i, cost=%.2f, lr=%f'
 			% (num_train_batches, num_train_batches, minibatch_avg_cost_sum/num_train_batches, trainer.get_learning_rate()))
 		dev_ppl = hook.evaluate(curr_iter)
 		lr = trainer.get_learning_rate()
@@ -87,13 +89,17 @@ class Hook:
 			if self.test_eval:
 				self.best_test_perplexity = test_perplexity
 
-		t1 = time.time()
-		rem_time = int((self.total_num_iter - curr_iter) * (t1 - self.t0) / curr_iter)
+		if curr_iter > 0:
+			t1 = time.time()
+			rem_time = int((self.total_num_iter - curr_iter) * (t1 - self.t0) / (curr_iter * 60))
+			rem_time = str(rem_time) + "m"
+		else:
+			rem_time = ""
 
-		L.info(('DEV  => Error=%.2f%%, PPL=' + U.BColors.BYELLOW + '%.2f @ %i' + U.BColors.ENDC + ' (' + U.BColors.BRED + '%.2f @ %i' + U.BColors.ENDC + '), Denom=%.3f, %im')
-			% (dev_error * 100., dev_perplexity, curr_iter, self.best_dev_perplexity, self.best_iter, denominator, rem_time / 60))
+		L.info(('DEV  => Error=%.2f%%, PPL=' + U.b_yellow('%.2f @ %i') + ' (' + U.b_red('%.2f @ %i') + '), Denom=%.3f, %s')
+			% (dev_error * 100., dev_perplexity, curr_iter, self.best_dev_perplexity, self.best_iter, denominator, rem_time))
 		if self.test_eval:
-			L.info(('TEST => Error=%.2f%%, PPL=' + U.BColors.BYELLOW + '%.2f @ %i' + U.BColors.ENDC + ' (' + U.BColors.BRED + '%.2f @ %i' + U.BColors.ENDC + ')')
+			L.info(('TEST => Error=%.2f%%, PPL=' + U.b_yellow('%.2f @ %i') + ' (' + U.b_red('%.2f @ %i') + ')')
 				% (test_error * 100., test_perplexity, curr_iter, self.best_test_perplexity, self.best_iter))
 		
 		return dev_perplexity
