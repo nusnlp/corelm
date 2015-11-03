@@ -27,7 +27,8 @@ class Activation():
 			return T.nnet.softplus
 		elif func_name == 'relu':
 			#return lambda x: T.maximum(x, 0)
-			return lambda x: x * (x > 0)
+			#return lambda x: x * (x > 0)
+			return T.nnet.relu
 		elif func_name == 'cappedrelu':
 			return lambda x: T.minimum(x * (x > 0), 6)
 		elif func_name == 'softmax':
