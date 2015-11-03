@@ -143,7 +143,7 @@ class MLP(classifier.Classifier):
 	
 	def negative_log_likelihood(self, y, weights=None):
 		if weights:
-			return -T.mean(T.log(self.p_y_given_x(y)) * weights)
+			return -T.sum(T.log(self.p_y_given_x(y)) * weights) / T.sum(weights)
 		else:
 			return -T.mean(T.log(self.p_y_given_x(y)))
 
