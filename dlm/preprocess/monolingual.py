@@ -69,10 +69,11 @@ if args.input_vocab_path is None:
 	# Writing the vocab file and creating a word to id dictionary.
 	vocab_path = prefix + ".vocab"
 	word_to_id_dict['<unk>'] = 0
-	word_to_id_dict['<s>'] = 1
-	added_tokens = '<unk>\n<s>\n'
+	word_to_id_dict['<null>'] = 1
+	word_to_id_dict['<s>'] = 2
+	added_tokens = '<unk>\n<null>\n<s>\n'
 	if args.endp:
-		word_to_id_dict['</s>'] = 2
+		word_to_id_dict['</s>'] = 3
 		added_tokens += '</s>\n'
 	with open(vocab_path, 'w') as f_vocab:
 		curr_index = len(word_to_id_dict)
@@ -92,7 +93,7 @@ else:
 			if not word_to_id_dict.has_key(token):
 				word_to_id_dict[token] = curr_index
 			curr_index = curr_index + 1
-		U.xassert(word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>'), "Missing <s> or <unk> in given vocab file")
+		U.xassert(word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>') and word_to_id_dict.has_key('<null>'), "Missing <s> or <unk> or <null> in given vocab file")
 		if args.endp:
 			U.xassert(word_to_id_dict.has_key('</s>'), "Missing </s> in given vocab file while --endp flag is used")
 		if word_to_id_dict.has_key('</s>'):

@@ -14,7 +14,7 @@ import dlm.utils as U
 import dlm.io.logging as L
 
 
-def process_vocab(input_path, vocab_size, vocab_path):
+def process_vocab(input_path, vocab_size, vocab_path, has_null):
 	word_to_id_dict = dict()			# Word to Index Dictionary
 	word_to_freq_dict = dict()			# Word Frequency Dictionary
 	with open(input_path, 'r') as input_file:
@@ -30,14 +30,23 @@ def process_vocab(input_path, vocab_size, vocab_path):
 					word_to_freq_dict[token] += 1	
 	
 	# Writing the vocab file and creating a word to id dictionary.
-	word_to_id_dict['<unk>'] = 0
-	word_to_id_dict['<s>'] = 1
-	added_tokens = '<unk>\n<s>\n'
+	curr_index = 0
+	word_to_id_dict['<unk>'] = curr_index
+	added_tokens = '<unk>\n'
+	curr_index += 1
+	if has_null:
+		word_to_id_dict['<null>'] = curr_index
+		added_tokens += '<null>\n'
+		curr_index += 1
+	word_to_id_dict['<s>'] = curr_index
+	added_tokens += '<s>\n'
+	curr_index += 1
+	
 	if args.endp:
-		word_to_id_dict['</s>'] = 2
-	added_tokens += '</s>\n'
+		word_to_id_dict['</s>'] = curr_index
+		added_tokens += '</s>\n'
+		curr_index += 1
 	with open(vocab_path, 'w') as f_vocab:
-		curr_index = len(word_to_id_dict)
 		f_vocab.write(added_tokens)
 		tokens_freq_sorted = sorted(word_to_freq_dict, key=word_to_freq_dict.get, reverse=True)
 		if vocab_size < len(tokens_freq_sorted):
@@ -48,7 +57,7 @@ def process_vocab(input_path, vocab_size, vocab_path):
 			curr_index = curr_index + 1
 	return word_to_id_dict
 
-def read_vocab(vocab_path, endp):
+def read_vocab(vocab_path, endp, has_null):
 	word_to_id_dict = dict()
 	with open(vocab_path,'r') as f_vocab:
 		curr_index = 0
@@ -58,6 +67,8 @@ def read_vocab(vocab_path, endp):
 				word_to_id_dict[token] = curr_index
 			curr_index = curr_index + 1
 		U.xassert(word_to_id_dict.has_key('<s>') and word_to_id_dict.has_key('<unk>'), "Missing <s> or <unk> in given vocab file")
+		if has_null:
+			U.xassert(word_to_id_dict.has_key('<null>'), "Missing <null> in given target vocab file")
 		if endp:
 			U.xassert(word_to_id_dict.has_key('</s>'), "Missing </s> in given vocab file while --endp flag is used")
 		if word_to_id_dict.has_key('</s>'):
@@ -79,7 +90,7 @@ parser.add_argument("-it", "--input-target-text", dest="trg_input_path", require
 parser.add_argument("-ia", "--alignment-file", dest="alignment_path", required=True, help="Alignment file for training text")
 
 parser.add_argument("-cs", "--source-context", dest="src_context", required=True, type=int, help="(Size of source context window - 1)/ 2")
-parser.add_argument("-ct", "--target-context", dest="trg_context", required=True, type=int, help="Size of target context window")
+parser.add_argument("-ct", "--target-context", dest="trg_context", required=True, type=int, help="Size of target ngram (including the output)")
 
 parser.add_argument("-o", "--output-dir", dest="output_dir_path", required=True, help="Path to output directory")
 
@@ -104,6 +115,10 @@ args = parser.parse_args()
 # Format of the memmap file does not support less than 5 because the first row consists of parameters for the neural network
 U.xassert(args.trg_context + args.src_context*2 + 1 > 3, "Total ngram size must be greater than 3. ngrams < 3 are not supported by the current memmap format.")
 
+L.info("Source Window Size: " + str(args.src_context * 2 + 1))
+L.info("Target Window Size: " + str(args.trg_context - 1))
+L.info("Total Sample Size: " + str(args.trg_context + args.src_context * 2 + 1))
+
 if (args.output_vocab_size is None):
 	args.output_vocab_size = args.trg_vocab_size
 
@@ -122,6 +137,7 @@ output_prefix = args.output_dir_path + "/output"
 
 # File paths
 if args.shuffle:
+	raise NotImplementedError
 	output_mmap_path = args.output_dir_path + "/" + prefix + ".idx.shuf.mmap"
 	output_idx_path = args.output_dir_path + "/" + prefix + ".idx.shuf.txt"
 	output_ngrams_path = args.output_dir_path + "/" + prefix + ".shuf.txt"
@@ -133,19 +149,19 @@ else:
 tune_output_path = "tune.idx.mmap"
 
 if args.src_vocab_path is None:
-	src_word_to_id = process_vocab(args.src_input_path, args.src_vocab_size, src_prefix+'.vocab')	# Word to index dictionary of source langauge
+	src_word_to_id = process_vocab(args.src_input_path, args.src_vocab_size, src_prefix+'.vocab', has_null=False)	# Word to index dictionary of source langauge
 else:
-	src_word_to_id = read_vocab(args.src_vocab_path,args.endp)	
+	src_word_to_id = read_vocab(args.src_vocab_path,args.endp, has_null=False)
 
 if args.trg_vocab_path is None:
-	trg_word_to_id = process_vocab(args.trg_input_path, args.trg_vocab_size, trg_prefix+'.vocab')	# Word to index dictionary of target langauge
+	trg_word_to_id = process_vocab(args.trg_input_path, args.trg_vocab_size, trg_prefix+'.vocab', has_null=True)	# Word to index dictionary of target langauge
 else:
-	trg_word_to_id = read_vocab(args.trg_vocab_path, args.endp)
+	trg_word_to_id = read_vocab(args.trg_vocab_path, args.endp, has_null=True)
 
 if args.output_vocab_path is None:
-	output_word_to_id = process_vocab(args.trg_input_path, args.output_vocab_size, output_prefix+'.vocab') # Word to index dictionary of vocab
+	output_word_to_id = process_vocab(args.trg_input_path, args.output_vocab_size, output_prefix+'.vocab', has_null=False) # Word to index dictionary of vocab
 else:
-	output_word_to_id = read_vocab(args.output_vocab_path, args.endp)
+	output_word_to_id = read_vocab(args.output_vocab_path, args.endp, has_null=False)
 
 svocab = len(src_word_to_id)
 tvocab = len(trg_word_to_id)
@@ -231,15 +247,15 @@ with open(args.src_input_path,'r') as src_file, open(args.trg_input_path, 'r') a
 			sample_idx += " " + str(output_word_to_id[output_word]) + "\n"
 
 			if args.shuffle:
-				samples.append = sample
-				samples_idx.append = sample_idx
+				samples.append(sample)
+				samples_idx.append(sample_idx)
 			else:
 				tmp_file.write(sample_idx)
 				if args.word_out:
 					f_ngrams.write(sample)
 
 			nsamples += 1
-			if nsamples % 100000 == 0:
+			if nsamples % 10000000 == 0:
 				L.info( str(nsamples) + " samples processed.")
 				
 # Shuffling the data and writing to tmp file
@@ -266,8 +282,8 @@ with open(tmp_path, 'r') as data:
 		fp[counter] = tokens
 		counter = counter + 1
 		if counter % 10000000 == 0:
-			print counter
-	print str(counter-1) + " samples mapped"
+			L.info(str(counter) + " samples mapped")
+	L.info(str(counter-3) + " samples mapped")
 	fp.flush
 	del fp
 
