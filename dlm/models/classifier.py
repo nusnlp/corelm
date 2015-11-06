@@ -1,5 +1,7 @@
 import sys
 from theano.misc.pkl_utils import pickle
+import gzip
+import dlm.io.logging as L
 
 class Classifier:
 
@@ -18,8 +20,15 @@ class Classifier:
 			args, params = pickle.load(model_file)
 		return args, params
 
-	def save_model(self, model_path):
-		with open(model_path, 'w') as model_file:
-			params = self.get_params()
-			pickle.dump((self.args, [param.get_value() for param in params]), model_file)
+	def save_model(self, model_path, zipped=True):
+		L.info('Saving model to ' + model_path)
+		if zipped:
+			compress_level = 5
+			with gzip.open(model_path, 'wb', compresslevel=compress_level) as model_file:
+				params = self.get_params()
+				pickle.dump((self.args, [param.get_value() for param in params]), model_file)
+		else:
+			with open(model_path, 'w') as model_file:
+				params = self.get_params()
+				pickle.dump((self.args, [param.get_value() for param in params]), model_file)
 

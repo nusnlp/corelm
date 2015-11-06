@@ -6,9 +6,9 @@ import dlm.utils as U
 import dlm.io.logging as L
 from dlm.algorithms.lr_tuner import LRTuner
 import time
-import numpy
+import numpy as np
 import sys
-
+import time
 
 
 def train(classifier, criterion, args, trainset, devset, testset=None):
@@ -19,7 +19,7 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 
 	num_train_batches = trainset.get_num_batches()
 	
-	trainer = Trainer(classifier, criterion, args.learning_rate, trainset)
+	trainer = Trainer(classifier, criterion, args.learning_rate, trainset, clip_threshold=args.clip_threshold)
 	lr_tuner = LRTuner(low=0.01*args.learning_rate, high=10*args.learning_rate, inc=0.01*args.learning_rate)
 
 	validation_frequency = 5000 # minibatches
@@ -32,17 +32,23 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	
 	hook.evaluate(0)
 	
+	a = time.time()
+	classifier.save_model(args.out_dir + '/model.epoch_0.gz', zipped=True)
+	print time.time() - a
+	
 	while (epoch < args.num_epochs):
 		epoch = epoch + 1
 		L.info("Epoch: " + U.red(epoch))
 		minibatch_avg_cost_sum = 0
 		for minibatch_index in xrange(num_train_batches):
-			minibatch_avg_cost = trainer.step(minibatch_index)
+			minibatch_avg_cost, gparams = trainer.step(minibatch_index)
 			minibatch_avg_cost_sum += minibatch_avg_cost
 			
 			if minibatch_index % verbose_freq == 0:
+				grad_norms = [np.linalg.norm(gparam) for gparam in gparams]
 				L.info(U.blue("[" + time.ctime() + "] ") + '%i/%i, cost=%.2f, lr=%f'
 					% (minibatch_index, num_train_batches, minibatch_avg_cost_sum/(minibatch_index+1), trainer.get_learning_rate()))
+				L.info('Grad Norms: [' + ', '.join(['%.6f' % gnorm for gnorm in grad_norms]) + ']')
 			curr_iter = (epoch - 1) * num_train_batches + minibatch_index
 			if curr_iter > 0 and curr_iter % validation_frequency == 0:
 				hook.evaluate(curr_iter)
@@ -53,7 +59,7 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 		lr = trainer.get_learning_rate()
 		lr = lr_tuner.adapt_lr(dev_ppl, lr)
 		trainer.set_learning_rate(lr)
-		classifier.save_model(args.out_dir + '/model.epoch_' + str(epoch))
+		classifier.save_model(args.out_dir + '/model.epoch_' + str(epoch) + '.gz', zipped=True)
 
 	end_time = time.time()
 	hook.evaluate(total_num_iter)
@@ -69,8 +75,8 @@ class Hook:
 		if testset:
 			self.test_eval = eval.Evaluator(dataset=testset, classifier=classifier)
 		self.best_iter = 0
-		self.best_dev_perplexity = numpy.inf
-		self.best_test_perplexity = numpy.inf
+		self.best_dev_perplexity = np.inf
+		self.best_test_perplexity = np.inf
 		self.t0 = time.time()
 		self.total_num_iter = total_num_iter
 		self.out_dir = out_dir
