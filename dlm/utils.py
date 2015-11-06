@@ -146,11 +146,12 @@ def set_theano_device(device, threads):
 	if device.startswith("gpu") and len(device) > 3:
 		try:
 			gpu_id = int(device[3:])
-			L.warning('Running on GPU yields non-deterministic results.')
 			if not is_gpu_free(gpu_id):
 				L.warning('The selected GPU (GPU' + str(gpu_id) + ') is apparently busy.')
 		except ValueError:
 			L.error("Unknown GPU device format: " + device)
+	if device.startswith("gpu"):
+		L.warning('Running on GPU yields non-deterministic results.')
 	xassert(sys.modules.has_key('theano') == False, "dlm.utils.set_theano_device() function cannot be called after importing theano")
 	os.environ['OMP_NUM_THREADS'] = str(threads)
 	os.environ['THEANO_FLAGS'] = 'device=' + device
