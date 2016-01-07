@@ -6,17 +6,25 @@ import dlm.utils as U
 
 class Linear():
 
-	def __init__(self, rng, input, n_in, n_out, W_values=None, b_values=None, no_bias=False, suffix=None):
+	def __init__(self, rng, input, n_in, n_out, W_values=None, init_method=0, b_values=None, no_bias=False, suffix=None):
 		
 		L.info("Linear layer, #inputs: %s, #outputs: %s" % (U.red(n_in), U.red(n_out)))
 
 		self.input = input
 
 		if W_values is None:
+			if init_method == 0:	# Useful for Relu activation
+				high = 0.01
+			elif init_method == 1:	# Useful for Tanh activation
+				high = numpy.sqrt(6. / (n_in + n_out))
+			elif init_method == 2:	# Useful for Sigmoid activation
+				high = 4 * numpy.sqrt(6. / (n_in + n_out))
+			else:
+				L.error('Invalid initialization method')
 			W_values = numpy.asarray(
 				rng.uniform(
-					low = -0.01, #low=-numpy.sqrt(6. / (n_in + n_out)),
-					high = 0.01, #high=numpy.sqrt(6. / (n_in + n_out)),
+					low=-high,
+					high=high,
 					size=(n_in, n_out)
 				),
 				dtype=theano.config.floatX
