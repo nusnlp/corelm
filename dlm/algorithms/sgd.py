@@ -1,5 +1,6 @@
 import theano.tensor as T
 import theano
+import dlm.io.logging as L
 
 class SGD:
 	def __init__(self, classifier, criterion, learning_rate, trainset, clip_threshold=0):
