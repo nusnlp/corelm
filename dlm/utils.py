@@ -32,6 +32,12 @@ def capture_output(command):
 		error("subprocess check_output function is not supported in this python version:" + version())
 	output = sub.check_output(command, shell=True)
 	return output
+
+#-----------------------------------------------------------------------------------------------------------#
+
+# Dummy object for holding other objects
+class Object(object):
+    pass
 	
 #-----------------------------------------------------------------------------------------------------------#
 	
@@ -84,6 +90,12 @@ def blue(message):
 
 def b_yellow(message):
 	return BColors.BYELLOW + str(message) + BColors.ENDC
+
+def green(message):
+	return BColors.GREEN + str(message) + BColors.ENDC
+
+def b_green(message):
+	return BColors.BGREEN + str(message) + BColors.ENDC
 	
 #-----------------------------------------------------------------------------------------------------------#
 	
@@ -157,6 +169,9 @@ def set_theano_device(device, threads):
 	os.environ['THEANO_FLAGS'] = 'device=' + device
 	os.environ['THEANO_FLAGS'] += ',force_device=True'
 	os.environ['THEANO_FLAGS'] += ',floatX=float32'
+	os.environ['THEANO_FLAGS'] += ',warn_float64=warn'
+	os.environ['THEANO_FLAGS'] += ',cast_policy=numpy+floatX'
+	#os.environ['THEANO_FLAGS'] += ',allow_gc=True'
 	os.environ['THEANO_FLAGS'] += ',print_active_device=False'
 	os.environ['THEANO_FLAGS'] += ',mode=FAST_RUN'
 	os.environ['THEANO_FLAGS'] += ',nvcc.fastmath=True' # makes div and sqrt faster at the cost of precision
