@@ -159,9 +159,9 @@ else:
 	trg_word_to_id = read_vocab(args.trg_vocab_path, args.endp, has_null=True)
 
 if args.output_vocab_path is None:
-	output_word_to_id = process_vocab(args.trg_input_path, args.output_vocab_size, output_prefix+'.vocab', has_null=False) # Word to index dictionary of vocab
+	output_word_to_id = process_vocab(args.trg_input_path, args.output_vocab_size, output_prefix+'.vocab', has_null=True) # Word to index dictionary of vocab
 else:
-	output_word_to_id = read_vocab(args.output_vocab_path, args.endp, has_null=False)
+	output_word_to_id = read_vocab(args.output_vocab_path, args.endp, has_null=True)
 
 svocab = len(src_word_to_id)
 tvocab = len(trg_word_to_id)
