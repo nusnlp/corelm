@@ -173,9 +173,10 @@ def set_theano_device(device, threads):
 	os.environ['THEANO_FLAGS'] += ',cast_policy=numpy+floatX'
 	#os.environ['THEANO_FLAGS'] += ',allow_gc=True'
 	os.environ['THEANO_FLAGS'] += ',print_active_device=False'
+	os.environ['THEANO_FLAGS'] += ',exception_verbosity=high'		# Highly verbose debugging
 	os.environ['THEANO_FLAGS'] += ',mode=FAST_RUN'
-	os.environ['THEANO_FLAGS'] += ',nvcc.fastmath=True' # makes div and sqrt faster at the cost of precision
-	os.environ['THEANO_FLAGS'] += ',optimizer_including=cudnn' # Comment out if CUDNN is not available
+	os.environ['THEANO_FLAGS'] += ',nvcc.fastmath=False' 			# True: makes div and sqrt faster at the cost of precision, and possible bugs
+	#os.environ['THEANO_FLAGS'] += ',optimizer_including=cudnn' 	# Comment out if CUDNN is not available
 	try:
 		import theano
 	except EnvironmentError:
