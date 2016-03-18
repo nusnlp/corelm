@@ -17,12 +17,17 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	else:
 		L.error("Invalid training algorithm: " + args.algorithm)
 
+	# Get number of minibatches from the training file
 	num_train_batches = trainset.get_num_batches()
 	
+	# Initialize the trainer object
 	trainer = Trainer(classifier, criterion, args.learning_rate, trainset, clip_threshold=args.clip_threshold)
-	lr_tuner = LRTuner(low=0.01*args.learning_rate, high=10*args.learning_rate, inc=0.01*args.learning_rate)
 
+	# Initialize the Learning Rate tuner, which adjusts learning rate based on the development/validation file
+	lr_tuner = LRTuner(low=0.01*args.learning_rate, high=10*args.learning_rate, inc=0.01*args.learning_rate)
 	validation_frequency = 5000 # minibatches
+
+	# Logging and statistics
 	total_num_iter = args.num_epochs * num_train_batches
 	hook = Hook(classifier, devset, testset, total_num_iter, args.out_dir)
 	L.info('Training')
@@ -34,13 +39,14 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 	
 	a = time.time()
 	classifier.save_model(args.out_dir + '/model.epoch_0.gz', zipped=True)
-	print time.time() - a
 	
 	while (epoch < args.num_epochs):
 		epoch = epoch + 1
 		L.info("Epoch: " + U.red(epoch))
+
 		minibatch_avg_cost_sum = 0
 		for minibatch_index in xrange(num_train_batches):
+			# Makes an update of the paramters after processing the minibatch
 			minibatch_avg_cost, gparams = trainer.step(minibatch_index)
 			minibatch_avg_cost_sum += minibatch_avg_cost
 			
@@ -57,7 +63,8 @@ def train(classifier, criterion, args, trainset, devset, testset=None):
 			% (num_train_batches, num_train_batches, minibatch_avg_cost_sum/num_train_batches, trainer.get_learning_rate()))
 		dev_ppl = hook.evaluate(curr_iter)
 		lr = trainer.get_learning_rate()
-		lr = lr_tuner.adapt_lr(dev_ppl, lr)
+		if args.enable_lr_adjust:
+			lr = lr_tuner.adapt_lr(dev_ppl, lr)
 		trainer.set_learning_rate(lr)
 		classifier.save_model(args.out_dir + '/model.epoch_' + str(epoch) + '.gz', zipped=True)
 
