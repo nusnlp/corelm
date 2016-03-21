@@ -36,6 +36,8 @@ parser.add_argument("--threads", dest="threads", default=8, type=int, help="Numb
 parser.add_argument("--emb-path", dest="emb_path", help="(optional) Word embeddings file.")
 parser.add_argument("--vocab", dest="vocab", help="(optional) Only needed if --emb-path is used.")
 parser.add_argument("--quiet", dest="quiet", action='store_true', help="Use this flag to disable the logger.")
+parser.add_argument( "--adjust-learning-rate", dest="enable_lr_adjust", action='store_true', help="Enable learning rate adjustment")
+
 #parser.add_argument("-m","--model-file", dest="model_path",  help="The file path to load the model from")
 
 args = parser.parse_args()
