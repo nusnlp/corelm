@@ -12,16 +12,16 @@ import numpy as np
 class Evaluator():
 
 	def __init__(self, dataset, classifier):
-		
+
 		index = T.lscalar()
 		x = classifier.input
 		y = T.ivector('y')
-		
+
 		if dataset:
 			self.dataset = dataset								# Initializing the dataset
 			self.num_batches = self.dataset.get_num_batches()	# Number of minibatches in the dataset
 			self.num_samples = self.dataset._get_num_samples()	# Number of samples in the dataset
-		
+
 			self.neg_sum_batch_log_likelihood = theano.function(
 				inputs=[index],
 				outputs=-T.sum(T.log(classifier.p_y_given_x(y))),
@@ -30,7 +30,7 @@ class Evaluator():
 					y: self.dataset.get_y(index)
 				}
 			)
-			
+
 			self.unnormalized_neg_sum_batch_log_likelihood = theano.function(
 				inputs=[index],
 				outputs=-T.sum(classifier.unnormalized_p_y_given_x(y)), # which is: -T.sum(T.log(T.exp(classifier.unnormalized_p_y_given_x(y))))
@@ -89,12 +89,18 @@ class Evaluator():
 	def mean_neg_log_likelihood(self):
 		return math.fsum([self.neg_sum_batch_log_likelihood(i) for i in xrange(self.num_batches)]) / self.num_samples # np.sum() has some precision problems here
 
+	def mean_unnormalized_neg_log_likelihood(self):
+		return math.fsum([self.unnormalized_neg_sum_batch_log_likelihood(i) for i in xrange(self.num_batches)]) / self.num_samples # np.sum() has some precision problems here
+
 	def perplexity(self):
 		return math.exp(self.mean_neg_log_likelihood())
 
+	def unnormalized_perplexity(self):
+		return math.exp(self.mean_unnormalized_neg_log_likelihood())
+
 	def get_sequence_log_prob(self, index):
 		return - self.neg_sequence_log_prob(index)
-	
+
 	def get_unnormalized_sequence_log_prob(self, index):
 		return - self.unnormalized_neg_sum_batch_log_likelihood(index)
 
