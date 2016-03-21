@@ -17,8 +17,8 @@ parser.add_argument("-v", "--vocab-file", dest="vocab_path", help="The vocabular
 parser.add_argument("-m", "--model-file", dest="model_path", required=True, help="Input PrimeLM model file")
 parser.add_argument("-ulp", "--unnormalized-log-prob-file", dest="ulp_path", help="Output file for sentence-level UNNORMALIZED log-probabilities")
 parser.add_argument("-nlp", "--normalized-log-prob-file", dest="nlp_path", help="Output file for sentence-level NORMALIZED log-probabilities")
-parser.add_argument("-ppl", "--perplexity", action='store_true', help="Compute perplexity")
-parser.add_argument("-un", "--unnormalized", action='store_true', help="Output need not be normalized")
+parser.add_argument("-ppl", "--perplexity", action='store_true', help="Compute and output normalized perplexity")
+parser.add_argument("-un", "--unnormalized", action='store_true', help="Compute and output unnormalized perplexity")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 
