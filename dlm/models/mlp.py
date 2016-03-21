@@ -114,14 +114,18 @@ class MLP(classifier.Classifier):
 		self.output = last_layer_output
 		self.p_y_given_x_matrix = T.nnet.softmax(last_layer_output)
 		
+		# Log Softmax
+		last_layer_output_shifted = last_layer_output - last_layer_output.max(axis=1, keepdims=True)
+		self.log_p_y_given_x_matrix = last_layer_output_shifted - T.log(T.sum(T.exp(last_layer_output_shifted),axis=1,keepdims=True))
+
+
 		#self.log_Z_sqr = T.log(T.mean(T.sum(T.exp(last_layer_output), axis=1))) ** 2
 		#self.log_Z_sqr = T.sum(T.log(T.sum(T.exp(last_layer_output), axis=1))) ** 2
 		self.log_Z_sqr = T.mean(T.log(T.sum(T.exp(last_layer_output), axis=1)) ** 2)
-		
+
 		######################################################################
 		## Model Predictions
-		#
-		
+
 		self.y_pred = T.argmax(self.p_y_given_x_matrix, axis=1)
 		
 		######################################################################
@@ -137,6 +141,9 @@ class MLP(classifier.Classifier):
 	
 	def p_y_given_x(self, y):
 		return self.p_y_given_x_matrix[T.arange(y.shape[0]), y]
+
+	def log_p_y_given_x(self, y):
+		return self.log_p_y_given_x_matrix[T.arange(y.shape[0]), y]
 	
 	def unnormalized_p_y_given_x(self, y):
 		return self.output[T.arange(y.shape[0]), y]
@@ -145,7 +152,8 @@ class MLP(classifier.Classifier):
 		if weights:
 			return -T.sum(T.log(self.p_y_given_x(y)) * weights) / T.sum(weights)
 		else:
-			return -T.mean(T.log(self.p_y_given_x(y)))
+			#return -T.mean( T.log(self.p_y_given_x(y)))						# Unstable : can lead to NaN
+			return -T.mean(self.log_p_y_given_x(y))								# Stable Version
 
 	def errors(self, y):
 		if y.ndim != self.y_pred.ndim:
