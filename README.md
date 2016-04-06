@@ -67,10 +67,6 @@ Integration of language and joint models trained using CoreLM is achieved by two
 * **Decoder Integration** : Currently, CoreLM uses the NPLM interface to Moses for integration. CoreLM models can be converted to NPLM format using [corelm_to_nplm.py](dlm/misc/corelm_to_nplm.py) script. This can be integrated using `NeuralLM` and `BilingualLM` feature functions in Moses (See [Moses documentation](http://www.statmt.org/moses/?n=FactoredTraining.BuildingLanguageModel)).
 
 
-## Authors
-Kaveh Taghipour ([@nusnlp](http://github.com/nusnlp))
-Shamil Chollampatt ([@shamilcm](http://github.com/shamilcm))
-
 
 
 ## License
