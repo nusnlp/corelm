@@ -45,7 +45,7 @@ args = parser.parse_args()
 args.cwd = os.getcwd()
 
 if args.out_dir is None:
-	args.out_dir = 'primelm-' + U.curr_time()
+	args.out_dir = 'corelm-' + U.curr_time()
 U.mkdir_p(args.out_dir)
 
 L.quiet = args.quiet
