@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Corelm by nusnlp</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Corelm</h1>
+          <h2>A Continuous Space Neural Network Language Model based on Theano</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/nusnlp/corelm/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/nusnlp/corelm/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/nusnlp/corelm" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="corelm" class="anchor" href="#corelm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>CoreLM</h1>
+
+<p>CoreLM is a flexible and reusable feed-forward neural network which can be used to train neural language models and joint models (Devlin et. al, 2014), and interface with popular SMT systems like <a href="http://www.statmt.org/moses/">MOSES</a>. It is implemented in Python using <a href="http://deeplearning.net/software/theano/">Theano</a>, which makes is easy-to-use and modify. </p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Implementation of self-normalized log-likelihood (Devlin et. al, 2014)  and noise contrastive estimation (NCE) loss functions, to train fast neural language models.</li>
+<li>Decoder Integration with MOSES using NeuralLM and BilingualLM feature functions in MOSES. Also, rescoring MOSES n-best lists using neural language models. </li>
+<li>Efficient and optimized implementation using Theano, capable of using GPU support for faster training and decoding. </li>
+<li>The neural network architecture is flexible. Multiple hidden layers and various activation function, multiple sets of features with different embeddings etc.</li>
+<li>The training is also flexible, with layer specific and adjustable learning rates, using various cost functions like log-likelihood and NCE and regularizations (L1 and L2). </li>
+<li>Preprocessing scripts for monolingual language modeling and bilingual language modeling. </li>
+</ul>
+
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<h3>
+<a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h3>
+
+<ul>
+<li>Python Version 2.7 </li>
+<li>Theano (See <a href="http://deeplearning.net/software/theano/install_ubuntu.html">installation instructions</a>) with CUDA support (to use GPU)</li>
+</ul>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+
+<ol>
+<li>
+<p>Download and unzip CoreLM package in your local machine.  Alternatively, you can clone using GIT.</p>
+
+<pre><code>git clone https://github.com/nusnlp/corelm /path/to/corelm
+</code></pre>
+</li>
+<li><p>Add the CoreLM directory to PYTHONPATH environment variable. For bash users, add the following line to ~/.bashrc : </p></li>
+</ol>
+
+<pre><code>export PYTHONPATH="${PYTHONPATH}:/path/to/corelm/"
+</code></pre>
+
+<h2>
+<a id="using-corelm" class="anchor" href="#using-corelm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using CoreLM</h2>
+
+<h3>
+<a id="preprocessing" class="anchor" href="#preprocessing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Preprocessing</h3>
+
+<p>The preprocessing scripts can be found in <a href="dlm/preprocess">dlm/preprocess/</a> directory. The following scripts are available. For detailed help, run the required script with <code>--help</code> option. </p>
+
+<ul>
+<li><p><strong><a href="dlm/preprocess/monolingual.py">monolingual.py</a></strong> : This script preprocesses a text file for monolingual language modeling. The text file must contain one sentence per line.</p></li>
+<li><p><strong><a href="dlm/preprocess/bilingual.py">bilingual.py</a></strong> : This script preprocesses sentence aligned parallel corpora for bilingual language modeling. </p></li>
+<li><p><strong><a href="dlm/preprocess/features.py">features.py</a></strong> : This script can be used for sequence labeling tasks. The input text file must have one sentence per line, and one per-word feature is accepted.  An example is shown below:</p></li>
+</ul>
+
+<pre><code>word1_feature1 word2_feature2 word3_feature3 ... wordN_featureN 
+</code></pre>
+
+<ul>
+<li>
+<strong><a href="dlm/preprocess/convert_to_memmap.py">convert_to_memmap.py</a></strong> : Custom inputs can be converted to input. The input must be a text file, with each line representing a training instance. The words or features must be replaced by corresponding indices according to the vocabulary file supplied. The format is as shown below:</li>
+</ul>
+
+<pre><code>word_index_11 word_index_12  ... word_index_1M output_word_index_1
+...
+...
+word_index_N1 word_index_N2  ... word_index_NM output_word_index_N
+</code></pre>
+
+<p>where M is the number of input words and N is the number of training instances.</p>
+
+<h3>
+<a id="training" class="anchor" href="#training" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Training</h3>
+
+<p>Training the neural network is done using the <a href="train.py">train.py</a> script. The script takes in a memory-memory mapped file which is generated by the pre-processing scripts. Use <code>--help</code> for detailed list of options. </p>
+
+<h3>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing</h3>
+
+<p>Evaluation of the neural network can be done using <a href="test.py">test.py</a> script. It prints the perplexities and log-likelihood of the models on the test set. It optionally outputs the predicted labels. To predict lables of custom test instances use the <a href="classify.py">classify.py</a> script. See --help for each script. </p>
+
+<h3>
+<a id="integration-with-moses" class="anchor" href="#integration-with-moses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Integration with Moses</h3>
+
+<p>Integration of language and joint models trained using CoreLM is achieved by two methods, re-ranking n-best hypothesis and decoder integration.</p>
+
+<ul>
+<li><p><strong>Re-ranking</strong> : To perform re-ranking of SMT n-best lists (in Moses format) using CoreLM models, first the weight of the new feature is to be trained using the <a href="dlm/reranker/train.py">dlm/reranker/train.py</a>. This can be done using MERT or PRO, which can be set using command-line options. After training the weights, the re-ranking can be done using <a href="dlm/reranker/rerank.py">dlm/reranker/rerank.py</a>. Refer to <code>--help</code> for these scripts for the list of options. </p></li>
+<li><p><strong>Decoder Integration</strong> : Currently, CoreLM uses the NPLM interface to Moses for integration. CoreLM models can be converted to NPLM format using <a href="dlm/misc/corelm_to_nplm.py">corelm_to_nplm.py</a> script. This can be integrated using <code>NeuralLM</code> and <code>BilingualLM</code> feature functions in Moses (See <a href="http://www.statmt.org/moses/?n=FactoredTraining.BuildingLanguageModel">Moses documentation</a>).</p></li>
+</ul>
+
+<h2>
+<a id="authors" class="anchor" href="#authors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors</h2>
+
+<p>Kaveh Taghipour (<a href="http://github.com/nusnlp">@nusnlp</a>)
+Shamil Chollampatt (<a href="http://github.com/shamilcm">@shamilcm</a>)</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>This project is licensed under the MIT license - see the <a href="LICENSE.md">LICENSE.md</a> file for details</p>
+        </section>
+
+        <footer>
+          Corelm is maintained by <a href="https://github.com/nusnlp">nusnlp</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
