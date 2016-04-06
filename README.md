@@ -1,6 +1,6 @@
-# PrimeLM 
+# CoreLM 
 
-PrimeLM is a flexible and reusable feed-forward neural network which can be used to train neural language models and joint models (Devlin et. al, 2014), and interface with popular SMT systems like [MOSES](http://www.statmt.org/moses/). It is implemented in Python using [Theano](http://deeplearning.net/software/theano/), which makes is easy-to-use and modify. 
+CoreLM is a flexible and reusable feed-forward neural network which can be used to train neural language models and joint models (Devlin et. al, 2014), and interface with popular SMT systems like [MOSES](http://www.statmt.org/moses/). It is implemented in Python using [Theano](http://deeplearning.net/software/theano/), which makes is easy-to-use and modify. 
 
 ## Features
 
@@ -18,17 +18,17 @@ PrimeLM is a flexible and reusable feed-forward neural network which can be used
 * Theano (See [installation instructions](http://deeplearning.net/software/theano/install_ubuntu.html)) with CUDA support (to use GPU)
 
 ### Installation
-1. Download and unzip PrimeLM package in your local machine.  Alternatively, you can clone using GIT.
+1. Download and unzip CoreLM package in your local machine.  Alternatively, you can clone using GIT.
 	```
-	git clone https://github.com/kavehtp/primelm /path/to/primelm
+	git clone https://github.com/nusnlp/corelm /path/to/primelm
 	```
 
-2. Add the PrimeLM directory to PYTHONPATH environment variable. For bash users, add the following line to ~/.bashrc : 
+2. Add the CoreLM directory to PYTHONPATH environment variable. For bash users, add the following line to ~/.bashrc : 
 ```
-export PYTHONPATH="${PYTHONPATH}:/path/to/primelm/"
+export PYTHONPATH="${PYTHONPATH}:/path/to/corelm/"
 ```
 
-## Using PrimeLM
+## Using CoreLM
 
 
 ### Preprocessing
@@ -61,14 +61,14 @@ Training the neural network is done using the [train.py](train.py) script. The s
 Evaluation of the neural network can be done using [test.py](test.py) script. It prints the perplexities and log-likelihood of the models on the test set. It optionally outputs the predicted labels. To predict lables of custom test instances use the [classify.py](classify.py) script. See --help for each script. 
 
 ### Integration with Moses
-Integration of language and joint models trained using PrimeLM is achieved by two methods, re-ranking n-best hypothesis and decoder integration.
-* **Re-ranking** : To perform re-ranking of SMT n-best lists (in Moses format) using PrimeLM models, first the weight of the new feature is to be trained using the [dlm/reranker/train.py](dlm/reranker/train.py). This can be done using MERT or PRO, which can be set using command-line options. After training the weights, the re-ranking can be done using [dlm/reranker/rerank.py](dlm/reranker/rerank.py). Refer to `--help` for these scripts for the list of options. 
+Integration of language and joint models trained using CoreLM is achieved by two methods, re-ranking n-best hypothesis and decoder integration.
+* **Re-ranking** : To perform re-ranking of SMT n-best lists (in Moses format) using CoreLM models, first the weight of the new feature is to be trained using the [dlm/reranker/train.py](dlm/reranker/train.py). This can be done using MERT or PRO, which can be set using command-line options. After training the weights, the re-ranking can be done using [dlm/reranker/rerank.py](dlm/reranker/rerank.py). Refer to `--help` for these scripts for the list of options. 
 
-* **Decoder Integration** : Currently, PrimeLM uses the NPLM interface to Moses for integration. PrimeLM models can be converted to NPLM format using [primelm_to_nplm.py](dlm/misc/primelm_to_nplm.py) script. This can be integrated using `NeuralLM` and `BilingualLM` feature functions in Moses (See [Moses documentation](http://www.statmt.org/moses/?n=FactoredTraining.BuildingLanguageModel)).
+* **Decoder Integration** : Currently, CoreLM uses the NPLM interface to Moses for integration. CoreLM models can be converted to NPLM format using [corelm_to_nplm.py](dlm/misc/primelm_to_nplm.py) script. This can be integrated using `NeuralLM` and `BilingualLM` feature functions in Moses (See [Moses documentation](http://www.statmt.org/moses/?n=FactoredTraining.BuildingLanguageModel)).
 
 
 ## Authors
-Kaveh Taghipour ([@kavehtp](http://github.com/kavehtp))
+Kaveh Taghipour ([@nusnlp](http://github.com/nusnlp))
 Shamil Chollampatt ([@shamilcm](http://github.com/shamilcm))
 
 
