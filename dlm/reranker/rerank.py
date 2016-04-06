@@ -7,7 +7,7 @@ import shutil
 try:
 	import dlm
 except ImportError:
-	print "[ERROR] dlm module not found. Add PrimeLM root directory to your PYTHONPATH"
+	print "[ERROR] dlm module not found. Add CoreLM root directory to your PYTHONPATH"
 	sys.exit()
 
 import dlm.utils as U
@@ -17,7 +17,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input-nbest", dest="input_nbest", required=True, help="Input n-best file")
 parser.add_argument("-v", "--vocab-file", dest="vocab_path", required=True, help="The vocabulary file that was used in training")
-parser.add_argument("-m", "--model-file", dest="model_path", required=True, help="Input PrimeLM model file")
+parser.add_argument("-m", "--model-file", dest="model_path", required=True, help="Input CoreLM model file")
 parser.add_argument("-w", "--weights", dest="weights", required=True, help="Input weights file")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 parser.add_argument("-o", "--output-dir", dest="out_dir", required=True, help="Output directory")

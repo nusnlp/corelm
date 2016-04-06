@@ -20,7 +20,7 @@ CoreLM is a flexible and reusable feed-forward neural network which can be used 
 ### Installation
 1. Download and unzip CoreLM package in your local machine.  Alternatively, you can clone using GIT.
 	```
-	git clone https://github.com/nusnlp/corelm /path/to/primelm
+	git clone https://github.com/nusnlp/corelm /path/to/corelm
 	```
 
 2. Add the CoreLM directory to PYTHONPATH environment variable. For bash users, add the following line to ~/.bashrc : 
@@ -64,7 +64,7 @@ Evaluation of the neural network can be done using [test.py](test.py) script. It
 Integration of language and joint models trained using CoreLM is achieved by two methods, re-ranking n-best hypothesis and decoder integration.
 * **Re-ranking** : To perform re-ranking of SMT n-best lists (in Moses format) using CoreLM models, first the weight of the new feature is to be trained using the [dlm/reranker/train.py](dlm/reranker/train.py). This can be done using MERT or PRO, which can be set using command-line options. After training the weights, the re-ranking can be done using [dlm/reranker/rerank.py](dlm/reranker/rerank.py). Refer to `--help` for these scripts for the list of options. 
 
-* **Decoder Integration** : Currently, CoreLM uses the NPLM interface to Moses for integration. CoreLM models can be converted to NPLM format using [corelm_to_nplm.py](dlm/misc/primelm_to_nplm.py) script. This can be integrated using `NeuralLM` and `BilingualLM` feature functions in Moses (See [Moses documentation](http://www.statmt.org/moses/?n=FactoredTraining.BuildingLanguageModel)).
+* **Decoder Integration** : Currently, CoreLM uses the NPLM interface to Moses for integration. CoreLM models can be converted to NPLM format using [corelm_to_nplm.py](dlm/misc/corelm_to_nplm.py) script. This can be integrated using `NeuralLM` and `BilingualLM` feature functions in Moses (See [Moses documentation](http://www.statmt.org/moses/?n=FactoredTraining.BuildingLanguageModel)).
 
 
 ## Authors

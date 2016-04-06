@@ -5,7 +5,7 @@ import imp
 try:
 	import dlm
 except ImportError:
-	print "[ERROR] dlm module not found. Add PrimeLM root directory to your PYTHONPATH"
+	print "[ERROR] dlm module not found. Add CoreLM root directory to your PYTHONPATH"
 	sys.exit()
 
 import dlm.io.logging as L
@@ -20,7 +20,7 @@ parser.add_argument("-i", "--input-file", dest="input_path", required=True, help
 parser.add_argument("-s", "--input-scores", dest="oracle", help="Input oracle scores  the n-best file")
 parser.add_argument("-o", "--output-file", dest="output_path", required=True, help="Output file")
 parser.add_argument("-v", "--vocab-file", dest="vocab_path", help="The vocabulary file.")
-parser.add_argument("-m", "--model-file", dest="model_path",  help="Input PrimeLM model file")
+parser.add_argument("-m", "--model-file", dest="model_path",  help="Input CoreLM model file")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 

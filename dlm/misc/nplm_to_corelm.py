@@ -70,7 +70,7 @@ if act_func == 'rectifier':
 args_nn.activation_name = act_func
 
 # Creating the classifier with the arguments read
-L.info("Creating PrimeLM model")
+L.info("Creating CoreLM model")
 classifier = MLP(args_nn)
 
 
@@ -104,8 +104,8 @@ if '\input_vocab' in model_dict:
 			f_vocab.write(word+'\n')
 
 
-# Saving the PrimeLM model
-model_file = args.out_dir + "/" + os.path.basename(args.nplm_model) + ".primelm"
-L.info("Saving PrimeLM model: " + model_file)
+# Saving the CoreLM model
+model_file = args.out_dir + "/" + os.path.basename(args.nplm_model) + ".corelm"
+L.info("Saving CoreLM model: " + model_file)
 classifier.save_model(model_file)
 

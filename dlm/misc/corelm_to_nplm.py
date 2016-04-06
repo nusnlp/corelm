@@ -20,7 +20,7 @@ def write_biases(f, biases):
 
 # Arguments for this script
 parser = argparse.ArgumentParser()
-parser.add_argument("-m", "--primelm-model", dest="primelm_model", required=True, help="The input NPLM model file")
+parser.add_argument("-m", "--corelm-model", dest="corelm_model", required=True, help="The input NPLM model file")
 parser.add_argument("-v", "--vocab-file", dest="vocab_path", required=True, help="The input vocabulary")
 parser.add_argument("-dir", "--directory", dest="out_dir", help="The output directory for log file, model, etc.")
 
@@ -30,15 +30,15 @@ U.set_theano_device('cpu',1)
 from dlm.models.mlp import MLP
 
 if args.out_dir is None:
-	args.out_dir = 'primelm_convert-' + U.curr_time()
+	args.out_dir = 'corelm_convert-' + U.curr_time()
 U.mkdir_p(args.out_dir)
 
-# Loading PrimeLM model and creating classifier class
-L.info("Loading PrimeLM model")
-classifier = MLP(model_path=args.primelm_model)
+# Loading CoreLM model and creating classifier class
+L.info("Loading CoreLM model")
+classifier = MLP(model_path=args.corelm_model)
 args_nn = classifier.args
 params_nn = classifier.params
-U.xassert(len(params_nn)==7, "PrimeLM model is not compatible with NPLM architecture. 2 hidden layers and an output linear layer is required.")
+U.xassert(len(params_nn)==7, "CoreLM model is not compatible with NPLM architecture. 2 hidden layers and an output linear layer is required.")
 
 embeddings = params_nn[0].get_value()
 W1 = params_nn[1].get_value()
@@ -65,7 +65,7 @@ with open(args.vocab_path,'r') as f_vocab:
 		if word == "</s>":
 			has_sentence_end = True
 
-U.xassert(has_sentence_end, "End-of-sentence marker (</s>) has to be present in PrimeLM model.")
+U.xassert(has_sentence_end, "End-of-sentence marker (</s>) has to be present in CoreLM model.")
 
 # adding null if it is not present
 if has_null == False:
@@ -73,7 +73,7 @@ if has_null == False:
 
 
 # Writing to NPLM model
-model_file = args.out_dir + "/" + os.path.basename(args.primelm_model) + ".nplm"
+model_file = args.out_dir + "/" + os.path.basename(args.corelm_model) + ".nplm"
 L.info("Writing NPLM Model: " + model_file)
 with open(model_file,'w') as f_model:
 	
@@ -84,7 +84,7 @@ with open(model_file,'w') as f_model:
  	if has_null == True:
 		f_model.write("input_vocab_size " + str(args_nn.vocab_size)+"\n")
 	else:
-		f_model.write("input_vocab_size " + str(args_nn.vocab_size + 1)+"\n") # +1 is used to add the <null> token which is not in primelm
+		f_model.write("input_vocab_size " + str(args_nn.vocab_size + 1)+"\n") # +1 is used to add the <null> token which is not in corelm
 	if has_null == True:
 		f_model.write("output_vocab_size " + str(args_nn.num_classes)+"\n")
 	else:

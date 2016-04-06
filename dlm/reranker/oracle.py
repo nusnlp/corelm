@@ -5,7 +5,7 @@ import imp
 try:
 	import dlm
 except ImportError:
-	print "[ERROR] dlm module not found. Add PrimeLM root directory to your PYTHONPATH"
+	print "[ERROR] dlm module not found. Add CoreLM root directory to your PYTHONPATH"
 	sys.exit()
 
 import dlm.utils as U
