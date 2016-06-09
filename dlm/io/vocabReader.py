@@ -3,7 +3,7 @@ import dlm.utils as U
 import dlm.io.logging as L
 
 class VocabManager:
-	def __init__(self, input_path):
+	def __init__(self, input_path, markers=True):
 		L.info("Initializing vocabulary from: " + input_path)
 		self.word_to_id_dict = dict()
 		self.id_to_word_dict = dict()
@@ -14,11 +14,12 @@ class VocabManager:
 				self.word_to_id_dict[word] = curr_id
 				self.id_to_word_dict[curr_id] = word
 				curr_id += 1
-		try:
-			self.unk_id = self.word_to_id_dict['<unk>']
-			self.padding_id = self.word_to_id_dict['<s>']
-		except KeyError:
-			L.error("Given vocab file does not include <unk> or <s>")
+		if markers == True:
+			try:
+				self.unk_id = self.word_to_id_dict['<unk>']
+				self.padding_id = self.word_to_id_dict['<s>']
+			except KeyError:
+				L.error("Given vocab file does not include <unk> or <s>")
 		self.has_end_padding = self.word_to_id_dict.has_key('</s>')
 		
 	def get_word_given_id(self, id):
