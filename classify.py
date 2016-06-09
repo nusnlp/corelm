@@ -16,7 +16,7 @@ parser.add_argument("-i", "--input-file", dest="input_path", required=True, help
 parser.add_argument("-v", "--vocab-file", dest="vocab_path", required=True, help="The vocabulary file for the model")
 parser.add_argument("-rv", "--restricted-vocab-file", dest="restricted_vocab_path", help="Restricted vocab file to predict the word")
 parser.add_argument("-m", "--model-file", dest="model_path", required=True, help="Input PrimeLM model file")
-parser.add_argument("-o", "--output-file",dest="output_path", required=True, help="Output File path.")
+parser.add_argument("-o", "--output-file",dest="output_path", required=False, help="Output File path.")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu)")
 args = parser.parse_args()
 
@@ -57,14 +57,14 @@ if args.restricted_vocab_path:
 #
 
 evaluator = eval.Evaluator(testset, classifier)
-
-
+print evaluator.perplexity()
+''' Uncomment to write the output class labels to a file
 if args.output_path:
 	with open(args.output_path, 'w') as output:
 		for i in xrange(testset._get_num_samples()):
 			out = evaluator.get_class(i, restricted_ids) 
 			output.write(vocab.get_word_given_id(out)+'\n')
-
+'''
 
 
 
