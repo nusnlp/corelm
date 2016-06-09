@@ -9,7 +9,7 @@ from dlm.io.w2vEmbReader import W2VEmbReader
 
 class LookupTable():
 	
-	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True, emb_path=None, vocab_path=None, add_weights=False):
+	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True, emb_path=None, vocab_path=None, add_weights=False, suffix=None, high=0.01):
 		
 		L.info("Lookup Table layer, #words: %s, #dims: %s" % (U.red(vocab_size), U.red(emb_dim)))
 
@@ -20,8 +20,8 @@ class LookupTable():
 		if self.emb_matrix is None:
 			self.emb_matrix = numpy.asarray(
 				rng.uniform(
-					low=-0.01, #low=-1,
-					high=0.01, #high=1,
+					low=-high, #low=-1,
+					high=high, #high=1,
 					size=(vocab_size, emb_dim)
 				),
 				dtype=theano.config.floatX
@@ -31,7 +31,12 @@ class LookupTable():
 			U.xassert(vocab_path, 'When emb_path is given, vocab must be given too.')
 			self.initialize(emb_path, vocab_path)
 		
-		self.embeddings = theano.shared(value=self.emb_matrix, name='embeddings', borrow=True)
+
+		embeddings_name = 'embeddings'
+		if suffix is not None:
+			embeddings_name += '.' + str(suffix)
+		
+		self.embeddings = theano.shared(value=self.emb_matrix, name=embeddings_name, borrow=True)
 		
 		if add_weights:
 			weights_vec = numpy.ones(vocab_size, dtype=theano.config.floatX)
