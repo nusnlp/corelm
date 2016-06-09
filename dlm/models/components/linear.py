@@ -6,7 +6,7 @@ import dlm.utils as U
 
 class Linear():
 
-	def __init__(self, rng, input, n_in, n_out, W_values=None, init_method=0, b_values=None, no_bias=False, suffix=None):
+	def __init__(self, rng, input, n_in, n_out, W_values=None, init_method=0, b_values=None, no_bias=False, suffix=None, high=0.01):
 		
 		L.info("Linear layer, #inputs: %s, #outputs: %s" % (U.red(n_in), U.red(n_out)))
 
@@ -14,7 +14,7 @@ class Linear():
 
 		if W_values is None:
 			if init_method == 0:	# Useful for Relu activation
-				high = 0.01
+				high = high
 			elif init_method == 1:	# Useful for Tanh activation
 				high = numpy.sqrt(6. / (n_in + n_out))
 			elif init_method == 2:	# Useful for Sigmoid activation
