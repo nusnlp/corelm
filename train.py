@@ -15,6 +15,7 @@ parser.add_argument("-tu", "--tune-mmap", dest="devset", required=True, help="Th
 parser.add_argument("-ts", "--test-mmap", dest="testset", help="The memory-mapped evaluation (test) file")
 parser.add_argument("-d", "--device", dest="device", default="gpu", help="The computing device (cpu or gpu). Default: gpu")
 parser.add_argument("-E", "--emb-dim", dest="emb_dim", default=50, type=int, help="Word embeddings dimension. Default: 50")
+parser.add_argument("-F", "--feature-emb-dim", dest="feature_emb_dim",   help="Comma separated feature embeddings dimensions.")
 parser.add_argument("-H", "--hidden-units", dest="num_hidden", default="512", help="A comma seperated list for the number of units in each hidden layer. Default: 512")
 parser.add_argument("-A", "--activation", dest="activation_name", default="tanh", help="Activation function (tanh|hardtanh|sigmoid|fastsigmoid|hardsigmoid|softplus|relu|cappedrelu|softmax). Default: tanh")
 parser.add_argument("-a", "--training-algorithm", dest="algorithm", default="sgd", help="The training algorithm (only sgd is supported for now). Default: sgd")
@@ -68,27 +69,42 @@ U.set_theano_device(args.device, args.threads)
 
 import dlm.trainer
 from dlm.io.mmapReader import MemMapReader
+from dlm.io.featuresmmapReader import FeaturesMemMapReader
+
 from dlm.models.mlp import MLP
 
 #########################
 ## Loading datasets
 #
-
-trainset = MemMapReader(args.trainset, batch_size=args.batchsize, instance_weights_path=args.instance_weights_path)
-devset = MemMapReader(args.devset)
-testset = None
-if args.testset:
-	testset = MemMapReader(args.testset)
+if args.feature_emb_dim is None:
+	trainset = FeaturesMemMapReader(args.trainset, batch_size=args.batchsize, instance_weights_path=args.instance_weights_path)
+	devset = FeaturesMemMapReader(args.devset)
+	testset = None
+	if args.testset:
+		testset = FeaturesMemMapReader(args.testset)
+else:														
+	trainset = FeaturesMemMapReader(args.trainset, batch_size=args.batchsize)
+	devset = FeaturesMemMapReader(args.devset)
+	testset = None
+	if args.testset:
+		testset = FeaturesMemMapReader(args.testset)
 
 
 #########################
 ## Creating model
 #
 
-L.info('Building the model')
-args.vocab_size = trainset.get_vocab_size()
 args.ngram_size = trainset.get_ngram_size()
 args.num_classes = trainset.get_num_classes()
+
+L.info('Building the model')
+if args.feature_emb_dim is None:
+	args.features_info = trainset.get_features_info()
+	args.vocab_size = args.features_info[0][0]
+	#args.vocab_size = trainset.get_vocab_size()
+	#args.features_info = [(args.vocab_size, args.ngram_size)]
+else:
+	args.features_info = trainset.get_features_info()
 
 classifier = MLP(args)
 
@@ -98,7 +114,7 @@ L.info('Parameters: ' + str(classifier.params))
 ## Training criterion
 #
 if args.loss_function == "nll":
-	from dlm.criterions.weighted_nll import NegLogLikelihood
+	from dlm.criterions.nll import NegLogLikelihood
 	criterion = NegLogLikelihood(classifier, args)
 elif args.loss_function == "nce":
 	from dlm.criterions.nce import NCELikelihood
