@@ -8,7 +8,7 @@ import argparse
 try:
 	import dlm
 except ImportError:
-	print "[ERROR] dlm module not found. Add PrimeLM root directory to your PYTHONPATH"
+	print "[ERROR] dlm module not found. Add CoreLM root directory to your PYTHONPATH"
 	sys.exit()
 import dlm.utils as U
 import dlm.io.logging as L
@@ -176,6 +176,7 @@ if args.word_out:
 
 # For shuffling only
 samples = []			# List of samples
+samples_idx = []		# For sample indices
 nsamples= 0
 
 sentence_count=0
