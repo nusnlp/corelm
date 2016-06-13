@@ -21,13 +21,13 @@ def read_vocab(vocab_path):
 			U.xassert((not word_to_id_dict.has_key(token)), "Given vocab file has duplicate entry for '" + token + "'.")
 			word_to_id_dict[token] = curr_index
 			curr_index = curr_index + 1
-	return word_to_id_dict		
+	return word_to_id_dict
 
 def replace_unk(word, dict):
 	if word in dict:
 		return word
 	else:
-		return "<unk>" 
+		return "<unk>"
 
 
 parser = argparse.ArgumentParser()
@@ -113,7 +113,7 @@ with open(args.input_path, 'r') as input_file, open(args.labels_path, 'r') as la
 			word, feature = tokens[token_idx].split('_')
 			label = ltokens[token_idx]
 			U.xassert(feature_to_id.has_key(feature), "Feature " + feature + " not present in feature vocab!")
-		
+
 			sample = []
 			sample_idx = []
 
@@ -123,7 +123,7 @@ with open(args.input_path, 'r') as input_file, open(args.labels_path, 'r') as la
 			for i in xrange(max(0, half_context - token_idx )):
 				sample.append("<s>")
 				sample_idx.append(input_word_to_id["<s>"])
-			
+
 			sample_words = [replace_unk(token.split('_')[0],input_word_to_id) for token in tokens[max(0, token_idx - half_context): token_idx + half_context + 1]]
 			sample 	= sample + sample_words
 			sample_idx = sample_idx + [input_word_to_id[word] for word in sample_words]
@@ -144,7 +144,7 @@ with open(args.input_path, 'r') as input_file, open(args.labels_path, 'r') as la
 				sample_idx = sample_idx + [feature_to_id[feature] for feature in sample_features]
 
 				for i in xrange(max(0, token_idx + half_context + 1 - len(tokens))):
-					sample.append("<s>")			
+					sample.append("<s>")
 					sample_idx.append(feature_to_id["<s>"])
 
 			#### Add POS tag to the sample ####
@@ -158,20 +158,20 @@ with open(args.input_path, 'r') as input_file, open(args.labels_path, 'r') as la
 				tmp_file.write(" ".join([str(idx) for idx in sample_idx]) + "\n")
 				if args.word_out:
 					f_words.write(" ".join([word for word in sample]) + "\n")
-			
+
 			nsamples += 1
 			if nsamples % 100000 == 0:
 				L.info( str(nsamples) + " samples processed.")
 
 
-		
+
 			#print word, feature, label
 
 			#if not input_word_to_id.has_key(word):
 			#	word = "<unk>"
 			#indices.append(str(input_word_to_id[word]))
 			#f_indices.append(str(feature_to_id[feature]))
-		
+
 # Shuffling the data and writing to tmp file
 if args.shuffle:
 	L.info("Shuffling data.")
@@ -188,28 +188,28 @@ L.info("Writing to MMap")
 if not args.no_features:
 	num_rows = nsamples + 5
 	num_cols = args.context_size * 2 + 1
-else: 
+else:
 	num_rows = nsamples + 4
 	num_cols = args.context_size + 1
 
 with open(tmp_path, 'r') as data:
 	fp = np.memmap(output_mmap_path, dtype='int32', mode='w+', shape=(nsamples + 5, num_cols))
-	
+
 	fp[0,0] = nsamples												# number of samples
 	fp[0,1] = num_cols												# No. of words + POS tag
 	if not args.no_features:
 		fp[1,0] = 3 												# No. of header lines
 		fp[2,0] = input_vocab_size
-		fp[2,1] = args.context_size												
+		fp[2,1] = args.context_size
 		fp[3,0] = feature_vocab_size
-		fp[3,1] = args.context_size												
+		fp[3,1] = args.context_size
 		fp[4,0] = label_vocab_size
 		fp[4,1] = 1
 		counter = 5
 	else:
 		fp[1,0] = 2 												# No. of header lines
 		fp[2,0] = input_vocab_size
-		fp[2,1] = args.context_size												
+		fp[2,1] = args.context_size
 		fp[3,0] = label_vocab_size
 		fp[4,1] = 1
 		counter = 4

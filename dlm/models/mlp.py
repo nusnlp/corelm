@@ -16,12 +16,12 @@ class MLP(classifier.Classifier):
 		######################################################################
 		## Parameters
 		#
-		
+
 		U.xassert((args or model_path) and not (args and model_path), "args or model_path are mutually exclusive")
-		
+
 		if model_path:
 			args, loaded_params = self.load_model(model_path)
-		
+
 		emb_dim = args.emb_dim
 		num_hidden_list = map(int, args.num_hidden.split(','))
 		if num_hidden_list[0] <= 0:
@@ -49,7 +49,7 @@ class MLP(classifier.Classifier):
 		self.L1 = 0
 		self.L2_sqr = 0
 		self.params = []
-		
+
 		# Not implemented with Sequence Labelling
 		emb_path, vocab = None, None
 		try:
@@ -57,7 +57,7 @@ class MLP(classifier.Classifier):
 			vocab = args.vocab
 		except AttributeError:
 			pass
-		
+
 		rng = numpy.random.RandomState(1234)
 		self.input = T.imatrix('input')
 
@@ -85,11 +85,11 @@ class MLP(classifier.Classifier):
 				last_layer_output = lookupTableLayer.output
 			else:
 				last_layer_output = T.concatenate([last_layer_output, lookupTableLayer.output], axis=1)
-			
+
 			last_layer_output_size +=  (num_elems) * emb_dim
 			self.params += lookupTableLayer.params
 			last_start_pos = last_start_pos + num_elems
-		
+
 		######################################################################
 		## Hidden Layer(s)
 		#
@@ -104,16 +104,16 @@ class MLP(classifier.Classifier):
 			last_layer_output = linearLayer.output
 			last_layer_output_size = num_hidden_list[i]
 			self.params += linearLayer.params
-			
+
 			activation = Activation(
 				input=last_layer_output,
 				func_name=activation_name
 			)
 			last_layer_output = activation.output
-			
+
 			self.L1 = self.L1 + abs(linearLayer.W).sum()
 			self.L2_sqr = self.L2_sqr + (linearLayer.W ** 2).sum()
-		
+
 		######################################################################
 		## Output Linear Layer
 		#
@@ -128,17 +128,17 @@ class MLP(classifier.Classifier):
 		)
 		last_layer_output = linearLayer.output
 		self.params += linearLayer.params
-		
+
 		self.L1 = self.L1 + abs(linearLayer.W).sum()
 		self.L2_sqr = self.L2_sqr + (linearLayer.W ** 2).sum()
-		
+
 		######################################################################
 		## Model Output
 		#
-		
+
 		self.output = last_layer_output
 		self.p_y_given_x_matrix = T.nnet.softmax(last_layer_output)
-		
+
 		# Log Softmax
 		last_layer_output_shifted = last_layer_output - last_layer_output.max(axis=1, keepdims=True)
 		self.log_p_y_given_x_matrix = last_layer_output_shifted - T.log(T.sum(T.exp(last_layer_output_shifted),axis=1,keepdims=True))
@@ -152,27 +152,27 @@ class MLP(classifier.Classifier):
 		## Model Predictions
 
 		self.y_pred = T.argmax(self.p_y_given_x_matrix, axis=1)
-		
+
 		######################################################################
 		## Loading parameters from file (if given)
 		#
-		
+
 		if model_path:
 			self.set_params(loaded_params)
-		
+
 	######################################################################
 	## Model Functions
 	#
-	
+
 	def p_y_given_x(self, y):
 		return self.p_y_given_x_matrix[T.arange(y.shape[0]), y]
 
 	def log_p_y_given_x(self, y):
 		return self.log_p_y_given_x_matrix[T.arange(y.shape[0]), y]
-	
+
 	def unnormalized_p_y_given_x(self, y):
 		return self.output[T.arange(y.shape[0]), y]
-	
+
 	def negative_log_likelihood(self, y, weights=None):
 		if weights:
 			return -T.sum(T.log(self.p_y_given_x(y)) * weights) / T.sum(weights)

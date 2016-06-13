@@ -82,7 +82,7 @@ if args.feature_emb_dim is None:
 	testset = None
 	if args.testset:
 		testset = FeaturesMemMapReader(args.testset)
-else:														
+else:
 	trainset = FeaturesMemMapReader(args.trainset, batch_size=args.batchsize)
 	devset = FeaturesMemMapReader(args.devset)
 	testset = None
