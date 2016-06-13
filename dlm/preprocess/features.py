@@ -132,21 +132,6 @@ with open(args.input_path, 'r') as input_file, open(args.labels_path, 'r') as la
 				sample.append("<s>")
 				sample_idx.append(input_word_to_id["<s>"])
 
-<<<<<<< HEAD
-			#### Add features to the sample #####
-			# Add sentence padding for features it is at beginning of sentence
-			for i in xrange(max(0, half_context - token_idx )):
-				sample.append("<s>")
-				sample_idx.append(feature_to_id["<s>"])
-
-			sample_features = [token.split('_')[1] for token in tokens[max(0, token_idx - half_context): token_idx + half_context + 1]]
-			sample = sample + sample_features
-			sample_idx = sample_idx + [feature_to_id[feature] for feature in sample_features]
-
-			for i in xrange(max(0, token_idx + half_context + 1 - len(tokens))):
-				sample.append("<s>")			
-				sample_idx.append(feature_to_id["<s>"])
-=======
 			if not args.no_features:
 				#### Add features to the sample #####
 				# Add sentence padding for features it is at beginning of sentence
@@ -161,7 +146,6 @@ with open(args.input_path, 'r') as input_file, open(args.labels_path, 'r') as la
 				for i in xrange(max(0, token_idx + half_context + 1 - len(tokens))):
 					sample.append("<s>")			
 					sample_idx.append(feature_to_id["<s>"])
->>>>>>> 440e6703c714cb263772221d3c81a72433ccce0c
 
 			#### Add POS tag to the sample ####
 			sample.append(label)
@@ -200,20 +184,6 @@ if args.shuffle:
 
 L.info("Writing to MMap")
 # Creating the memory-mapped file
-<<<<<<< HEAD
-with open(tmp_path, 'r') as data:
-	fp = np.memmap(output_mmap_path, dtype='int32', mode='w+', shape=(nsamples + 5, args.context_size * 2 + 1))
-	fp[0,0] = nsamples												# number of samples
-	fp[0,1] = args.context_size * 2  + 1									# No. of words + POS tag
-	fp[1,0]	= 3 															# No. of header lines
-	fp[2,0] = input_vocab_size
-	fp[2,1] = args.context_size												# No. of header lines
-	fp[3,0] = feature_vocab_size
-	fp[3,1] = args.context_size												# No. of header lines
-	fp[4,0] = label_vocab_size
-	fp[4,1] = 1
-	counter = 5
-=======
 
 if not args.no_features:
 	num_rows = nsamples + 5
@@ -244,7 +214,6 @@ with open(tmp_path, 'r') as data:
 		fp[4,1] = 1
 		counter = 4
 
->>>>>>> 440e6703c714cb263772221d3c81a72433ccce0c
 	for line in data:
 		tokens = line.split()
 		fp[counter] = tokens
