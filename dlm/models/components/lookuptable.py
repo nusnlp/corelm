@@ -8,13 +8,13 @@ from dlm.io.vocabReader import VocabManager
 from dlm.io.w2vEmbReader import W2VEmbReader
 
 class LookupTable():
-	
+
 	def __init__(self, rng, input, vocab_size, emb_dim, emb_matrix=None, concat=True, emb_path=None, vocab_path=None, add_weights=False, suffix=None, high=0.01):
-		
+
 		L.info("Lookup Table layer, #words: %s, #dims: %s" % (U.red(vocab_size), U.red(emb_dim)))
 
 		self.input = input
-		
+
 		self.emb_matrix = emb_matrix
 
 		if self.emb_matrix is None:
@@ -26,35 +26,35 @@ class LookupTable():
 				),
 				dtype=theano.config.floatX
 			)
-		
+
 		if emb_path:
 			U.xassert(vocab_path, 'When emb_path is given, vocab must be given too.')
 			self.initialize(emb_path, vocab_path)
-		
+
 
 		embeddings_name = 'embeddings'
 		if suffix is not None:
 			embeddings_name += '.' + str(suffix)
-		
+
 		self.embeddings = theano.shared(value=self.emb_matrix, name=embeddings_name, borrow=True)
-		
+
 		if add_weights:
 			weights_vec = numpy.ones(vocab_size, dtype=theano.config.floatX)
 			self.weights = theano.shared(value=weights_vec, name='word_weights', borrow=True)
-			
+
 			# Check if the speed can be improved
 			self.output = (self.weights.dimshuffle(0, 'x') * self.embeddings)[input]
 			#self.output = self.weights.dimshuffle(0, 'x')[input] * self.embeddings[input]
 			#self.output = self.weights[input].dimshuffle(0, 'x') * self.embeddings[input]
-			
+
 			self.params = [self.embeddings, self.weights]
 		else:
 			self.output = self.embeddings[input]
 			self.params = [self.embeddings]
-		
+
 		if concat:
 			self.output = self.output.reshape((input.shape[0], emb_dim * input.shape[1]))
-	
+
 	def initialize(self, emb_path, vocab_path):
 		L.info('Initializing lookup table')
 		vm = VocabManager(vocab_path)
