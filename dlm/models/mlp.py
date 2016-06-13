@@ -27,8 +27,22 @@ class MLP(classifier.Classifier):
 		if num_hidden_list[0] <= 0:
 			num_hidden_list = []
 
-		vocab_size = args.vocab_size
+
 		self.ngram_size = args.ngram_size
+
+		if args.feature_emb_dim is None:
+			features_info = [(args.vocab_size, args.ngram_size-1, args.emb_dim)]
+		else:
+			features_dim = map(int, args.feature_emb_dim.split(','))
+			features_dim.insert(0,emb_dim)
+			U.xassert(len(features_dim) == len(args.features_info), "The number of specified feature dimensions does not match the number of features!")
+			features_info = []
+			for feature_info,feature_dim in zip(args.features_info, features_dim):
+				feature_info = feature_info + (feature_dim,)
+				features_info.append(feature_info)
+
+		print "Classifier Creation"
+		print features_info
 		num_classes = args.num_classes
 		activation_name = args.activation_name
 		self.args = args
@@ -36,6 +50,7 @@ class MLP(classifier.Classifier):
 		self.L2_sqr = 0
 		self.params = []
 		
+		# Not implemented with Sequence Labelling
 		emb_path, vocab = None, None
 		try:
 			emb_path = args.emb_path
@@ -49,24 +64,35 @@ class MLP(classifier.Classifier):
 		######################################################################
 		## Lookup Table Layer
 		#
-		
-		lookupTableLayer = LookupTable(
-			rng=rng,
-			input=self.input,
-			vocab_size=vocab_size,
-			emb_dim=emb_dim,
-			emb_path=emb_path,
-			vocab_path=vocab,
-			add_weights=args.weighted_emb
-		)
-		last_layer_output = lookupTableLayer.output
-		last_layer_output_size = (self.ngram_size - 1) * emb_dim
-		self.params += lookupTableLayer.params
+		last_start_pos = 0
+		last_layer_output = None
+		last_layer_output_size = 0
+		for i in range(0, len(features_info)):
+			vocab_size, num_elems,emb_dim = features_info[i]
+			if i != 0:
+				emb_path, vocab = None, None
+			lookupTableLayer = LookupTable(
+				rng=rng,
+				input=self.input[:,last_start_pos:last_start_pos+num_elems],
+				vocab_size=vocab_size,
+				emb_dim=emb_dim,
+				emb_path=emb_path,
+				vocab_path=vocab,
+				add_weights=args.weighted_emb,
+				suffix=i
+			)
+			if last_layer_output is None:
+				last_layer_output = lookupTableLayer.output
+			else:
+				last_layer_output = T.concatenate([last_layer_output, lookupTableLayer.output], axis=1)
+			
+			last_layer_output_size +=  (num_elems) * emb_dim
+			self.params += lookupTableLayer.params
+			last_start_pos = last_start_pos + num_elems
 		
 		######################################################################
 		## Hidden Layer(s)
 		#
-		
 		for i in range(0, len(num_hidden_list)):
 			linearLayer = Linear(
 				rng=rng,
@@ -91,7 +117,6 @@ class MLP(classifier.Classifier):
 		######################################################################
 		## Output Linear Layer
 		#
-		
 		linearLayer = Linear(
 			rng=rng,
 			input=last_layer_output,

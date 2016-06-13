@@ -115,3 +115,6 @@ class Evaluator():
 			return restricted_ids[np.argmax(self.get_p_matrix(index)[:,restricted_ids])]
 		else:
 			return self.get_y_pred(index)[0]
+
+	def get_batch_predicted_class(self, index):
+		return self.get_y_pred(index)

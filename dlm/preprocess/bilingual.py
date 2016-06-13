@@ -176,6 +176,7 @@ if args.word_out:
 
 # For shuffling only
 samples = []			# List of samples
+samples_idx = []		# For sample indices
 nsamples= 0
 
 sentence_count=0
