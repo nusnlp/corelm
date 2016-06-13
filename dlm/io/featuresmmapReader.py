@@ -9,13 +9,13 @@ import sys
 import os
 
 class FeaturesMemMapReader():
-	
+
 	#### Constructor
-	
+
 	def __init__(self, dataset_path, batch_size=500, instance_weights_path=None):
-		
+
 		L.info("Initializing dataset (with features) from: " + os.path.abspath(dataset_path))
-		
+
 		# Reading parameters from the mmap file
 		fp = np.memmap(dataset_path, dtype='int32', mode='r')
 		#print type(fp1)
@@ -29,7 +29,7 @@ class FeaturesMemMapReader():
 
 		num_header_lines = fp[1,0]
 
-	
+
 		self.features_info = []    # Format (vocab_size, num_of_elements)
 		for i in xrange(num_header_lines-1):
 			self.features_info.append( (fp[i+2,0], fp[i+2,1]) )
@@ -58,7 +58,7 @@ class FeaturesMemMapReader():
 		self.shared_x = T.cast(theano.shared(x, borrow=True), 'int32')
 		y = fp[num_header_lines+2:,self.ngram - 1]			# Reading the output word index
 		self.shared_y = T.cast(theano.shared(y, borrow=True), 'int32')
-		
+
 
 		## Untested instance weighting
 		self.is_weighted = False
@@ -67,22 +67,22 @@ class FeaturesMemMapReader():
 			U.xassert(instance_weights.shape == (self.num_samples,), "The number of lines in weights file must be the same as the number of samples.")
 			self.shared_w = T.cast(theano.shared(instance_weights, borrow=True), theano.config.floatX)
 			self.is_weighted = True
-		
+
 		L.info('  #samples: %s,  #classes: %s, batch size: %s, #batches: %s' % (
 				U.red(self.num_samples),   U.red(self.num_classes), U.red(self.batch_size), U.red(self.num_batches)
 			))
 		for feature in enumerate(self.features_info):
 			L.info("Feature %s: #ngrams= %s vocab_size= %s" %( U.red(feature[0]), U.red(feature[1][1]), U.red(feature[1][0])))
-		
-		 
 
-	
+
+
+
 	#### Accessors
-	
+
 	def get_x(self, index):			## Get the  stacked x's
 		#return T.concatenate(self.shared_x_list, axis=1)[index * self.batch_size : (index+1) * self.batch_size]
 		return self.shared_x[index * self.batch_size : (index+1) * self.batch_size]
-	
+
 	def get_y(self, index):
 		return self.shared_y[index * self.batch_size : (index+1) * self.batch_size]
 
@@ -94,18 +94,18 @@ class FeaturesMemMapReader():
 
 	def get_w(self, index):
 		return self.shared_w[index * self.batch_size : (index+1) * self.batch_size]
-	
+
 	#### INFO
-	
+
 	def _get_num_samples(self):
 		return self.num_samples
-	
+
 	def get_num_batches(self):
 		return self.num_batches
-	
+
 	def get_ngram_size(self):
 		return self.ngram
-	
+
 	def get_vocab_size(self, feature_index):
 		return self.features_info[feature_index][0]
 
